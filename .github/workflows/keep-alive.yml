@@ -1,1 +1,28 @@
 
+name: Keep Supabase awake
+
+# Free Supabase projects pause after 7 days with no database activity.
+# This pings the REST API every 3 days — comfortably inside that window —
+# so the project never goes quiet long enough to hibernate.
+
+on:
+  schedule:
+    - cron: '0 18 */3 * *'   # every 3 days at 18:00 UTC
+  workflow_dispatch:          # lets you trigger it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/products?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY")
+          echo "Supabase responded with HTTP $STATUS"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::warning::Unexpected status code from Supabase — check the project hasn't been paused or the secrets haven't gone stale."
+          fi
