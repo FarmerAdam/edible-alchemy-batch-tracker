@@ -420,6 +420,10 @@
           <button type="submit" class="btn btn-primary">Add product</button>
         </div>
       </form>
+
+      <h3>Backup</h3>
+      <p class="help-text">Supabase's free tier doesn't take automatic backups — if the database is ever lost or wiped, there's no built-in way to get it back. Grab a copy here every so often, especially before any database changes.</p>
+      <button id="downloadBackupBtn" class="btn btn-secondary">Download backup (.json)</button>
     </section>
 
   </main>
@@ -435,7 +439,7 @@
   // ====================================================================
   // Bump this by 0.05 with every future change to this app — it's the
   // only thing that needs updating; the on-screen tag reads from here.
-  const APP_VERSION = "v0.35";
+  const APP_VERSION = "v0.40";
 
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
@@ -1335,6 +1339,34 @@
   // ====================================================================
   // GO
   // ====================================================================
+  $('#downloadBackupBtn').addEventListener('click', async function(){
+    const btn = $('#downloadBackupBtn');
+    btn.disabled = true;
+    btn.textContent = 'Downloading…';
+    try{
+      const tableNames = ['categories','products','product_sizes','batches','batch_size_quantities','batch_sales','batch_losses'];
+      const results = await Promise.all(tableNames.map(function(t){ return sb.from(t).select('*'); }));
+      const backup = { exported_at: new Date().toISOString(), app_version: APP_VERSION };
+      for(let i=0;i<tableNames.length;i++){
+        if(results[i].error) throw results[i].error;
+        backup[tableNames[i]] = results[i].data;
+      }
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'edible-alchemy-backup-' + todayISO() + '.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Backup downloaded.');
+    }catch(err){
+      showToast('Could not download backup: ' + err.message, true);
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Download backup (.json)';
+    }
+  });
+
   $('#versionTag').textContent = APP_VERSION;
   renderPSizeEditor();
   initAuth();
