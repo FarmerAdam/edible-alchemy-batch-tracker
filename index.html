@@ -53,6 +53,16 @@
   .btn-secondary:hover{border-color:var(--ink-soft);}
   .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid transparent;}
   .btn-ghost:hover{border-color:var(--line);}
+
+  a{ color:var(--kraft-dark); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .btn-back{
+    display:inline-flex; align-items:center; gap:.4em;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding:.5em 1.1em; font-size:.88rem; font-weight:600; color:var(--ink-soft);
+    text-decoration:none; margin-bottom:1.2em;
+  }
+  .btn-back:hover{ border-color:var(--kraft); color:var(--ink); text-decoration:none; }
   .btn-small{padding:.4em .8em; font-size:.82rem;}
   .btn-block{width:100%;}
   .btn[disabled]{opacity:.5; cursor:not-allowed;}
@@ -367,7 +377,7 @@
 
     <!-- BATCH DETAIL (also the QR landing page) -->
     <section id="view-batchDetail" class="view hidden">
-      <p><a href="#/" id="backToDashboard">← Back to dashboard</a></p>
+      <p><a href="#/" id="backToDashboard" class="btn-back">← Back to dashboard</a></p>
       <div id="batchDetailContent"></div>
     </section>
 
@@ -425,7 +435,7 @@
   // ====================================================================
   // Bump this by 0.05 with every future change to this app — it's the
   // only thing that needs updating; the on-screen tag reads from here.
-  const APP_VERSION = "v0.25";
+  const APP_VERSION = "v0.30";
 
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
@@ -1084,7 +1094,7 @@
         '<label>Qty<input type="number" id="qlQty" min="0.01" step="0.01" required></label>' +
         '<label>Reason<input type="text" id="qlReason" placeholder="e.g. Mould on top, off taste, jar cracked" required></label>' +
         '<label>Date<input type="date" id="qlDate" value="'+todayISO()+'"></label>' +
-        '<button type="submit" class="btn btn-secondary" '+(breakdown.every(function(r){return r.remaining<=0;})?'disabled':'')+'>Log loss</button>' +
+        '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){return r.remaining<=0;})?'disabled':'')+'>Log loss</button>' +
       '</form>' +
       '<h3>Label</h3>' +
       '<div class="label-section">' +
