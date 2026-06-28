@@ -435,7 +435,7 @@
   // ====================================================================
   // Bump this by 0.05 with every future change to this app — it's the
   // only thing that needs updating; the on-screen tag reads from here.
-  const APP_VERSION = "v0.30";
+  const APP_VERSION = "v0.35";
 
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
@@ -500,18 +500,27 @@
   // ====================================================================
   // AUTH
   // ====================================================================
+  let currentUserEmail = null;
+  function displayNameFromEmail(email){
+    if(!email) return 'Unknown';
+    const local = email.split('@')[0];
+    const firstPart = local.split(/[._-]/)[0];
+    return firstPart.charAt(0).toUpperCase() + firstPart.slice(1).toLowerCase();
+  }
+
   async function initAuth(){
     const { data } = await sb.auth.getSession();
-    if(data && data.session){ await onSignedIn(); } else { showLogin(); }
+    if(data && data.session){ await onSignedIn(data.session); } else { showLogin(); }
     sb.auth.onAuthStateChange(function(event, session){
-      if(session){ onSignedIn(); } else { showLogin(); }
+      if(session){ onSignedIn(session); } else { showLogin(); }
     });
   }
   function showLogin(){
     $('#loginView').classList.remove('hidden');
     $('#appView').classList.add('hidden');
   }
-  async function onSignedIn(){
+  async function onSignedIn(session){
+    currentUserEmail = (session && session.user) ? session.user.email : null;
     $('#loginView').classList.add('hidden');
     $('#appView').classList.remove('hidden');
     await loadAll();
@@ -898,7 +907,8 @@
         batch_date: date,
         best_before_date: bestBefore || null,
         recipe_notes: $('#nbRecipeNotes').value.trim() || null,
-        process_notes: $('#nbProcessNotes').value.trim() || null
+        process_notes: $('#nbProcessNotes').value.trim() || null,
+        created_by: currentUserEmail
       }).select().single();
       if(error) throw error;
 
@@ -1047,7 +1057,7 @@
       '<div class="detail-head">' +
         '<span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(categoryName(product.category_id))+'</span>' +
         '<h2>'+escapeHtml(product.name)+'</h2>' +
-        '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+' &middot; made '+fmtDate(batch.batch_date)+(batch.best_before_date?' &middot; BB '+fmtDate(batch.best_before_date):'')+'</p>' +
+        '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+' &middot; made '+fmtDate(batch.batch_date)+(batch.best_before_date?' &middot; BB '+fmtDate(batch.best_before_date):'')+(batch.created_by?' &middot; by '+escapeHtml(displayNameFromEmail(batch.created_by)):'')+'</p>' +
       '</div>' +
       '<h3>Stock by size</h3>' +
       '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Sold</th><th>Lost</th><th>Remaining</th></tr></thead><tbody>' +
