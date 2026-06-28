@@ -440,7 +440,7 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const state = { categories:[], products:[], productSizes:[], batches:[], sizeQuantities:[], sales:[] };
+  const state = { categories:[], products:[], productSizes:[], batches:[], sizeQuantities:[], sales:[], losses:[] };
   let nbSizeRowState = []; // [{sizeId, label}] for the New Batch form
   let pSizeRowState = [];  // [string,...] for the Add Product form
 
@@ -516,21 +516,23 @@
   // ====================================================================
   async function loadAll(){
     try{
-      const [cRes, pRes, psRes, bRes, sqRes, sRes] = await Promise.all([
+      const [cRes, pRes, psRes, bRes, sqRes, sRes, lRes] = await Promise.all([
         sb.from('categories').select('*').order('sort_order'),
         sb.from('products').select('*').eq('active', true).order('name'),
         sb.from('product_sizes').select('*').eq('active', true).order('sort_order'),
         sb.from('batches').select('*').eq('archived', false).order('batch_date', { ascending:false }),
         sb.from('batch_size_quantities').select('*'),
-        sb.from('batch_sales').select('*')
+        sb.from('batch_sales').select('*'),
+        sb.from('batch_losses').select('*')
       ]);
-      [cRes,pRes,psRes,bRes,sqRes,sRes].forEach(function(r){ if(r.error) throw r.error; });
+      [cRes,pRes,psRes,bRes,sqRes,sRes,lRes].forEach(function(r){ if(r.error) throw r.error; });
       state.categories = cRes.data || [];
       state.products = pRes.data || [];
       state.productSizes = psRes.data || [];
       state.batches = bRes.data || [];
       state.sizeQuantities = sqRes.data || [];
       state.sales = sRes.data || [];
+      state.losses = lRes.data || [];
 
       populateProductSelects();
       renderDashboard();
@@ -557,20 +559,26 @@
     return state.sales.filter(function(s){ return s.batch_id===batchId && s.product_size_id===sizeId; })
       .reduce(function(sum,s){ return sum+Number(s.quantity); }, 0);
   }
+  function lostForBatchSize(batchId, sizeId){
+    return state.losses.filter(function(l){ return l.batch_id===batchId && l.product_size_id===sizeId; })
+      .reduce(function(sum,l){ return sum+Number(l.quantity); }, 0);
+  }
   function remainingForBatchSize(batchId, sizeId){
-    return producedForBatchSize(batchId,sizeId) - soldForBatchSize(batchId,sizeId);
+    return producedForBatchSize(batchId,sizeId) - soldForBatchSize(batchId,sizeId) - lostForBatchSize(batchId,sizeId);
   }
   function batchSizeBreakdown(batchId){
     return state.sizeQuantities.filter(function(q){ return q.batch_id===batchId; }).map(function(q){
       const size = state.productSizes.find(function(s){ return s.id===q.product_size_id; });
       const sold = soldForBatchSize(batchId, q.product_size_id);
+      const lost = lostForBatchSize(batchId, q.product_size_id);
       return {
         sizeId: q.product_size_id,
         label: size ? size.label : 'Unknown size',
         sortOrder: size ? size.sort_order : 0,
         produced: Number(q.quantity_produced),
         sold: sold,
-        remaining: Number(q.quantity_produced) - sold
+        lost: lost,
+        remaining: Number(q.quantity_produced) - sold - lost
       };
     }).sort(function(a,b){ return a.sortOrder-b.sortOrder; });
   }
@@ -1010,6 +1018,9 @@
     const sizeLookup = {};
     state.productSizes.forEach(function(s){ sizeLookup[s.id] = s.label; });
 
+    const lossesForBatch = state.losses.filter(function(l){ return l.batch_id===batch.id; })
+      .sort(function(a,b){ return b.loss_date.localeCompare(a.loss_date); });
+
     content.innerHTML =
       '<div class="detail-head">' +
         '<span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(categoryName(product.category_id))+'</span>' +
@@ -1017,9 +1028,9 @@
         '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+' &middot; made '+fmtDate(batch.batch_date)+(batch.best_before_date?' &middot; BB '+fmtDate(batch.best_before_date):'')+'</p>' +
       '</div>' +
       '<h3>Stock by size</h3>' +
-      '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Sold</th><th>Remaining</th></tr></thead><tbody>' +
+      '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Sold</th><th>Lost</th><th>Remaining</th></tr></thead><tbody>' +
         breakdown.map(function(row){
-          return '<tr><td>'+escapeHtml(row.label)+'</td><td>'+row.produced+'</td><td>'+row.sold+'</td><td class="'+(row.remaining<=0?'text-out':'')+'">'+row.remaining+'</td></tr>';
+          return '<tr><td>'+escapeHtml(row.label)+'</td><td>'+row.produced+'</td><td>'+row.sold+'</td><td>'+(row.lost>0?('<span class="text-out">'+row.lost+'</span>'):'0')+'</td><td class="'+(row.remaining<=0?'text-out':'')+'">'+row.remaining+'</td></tr>';
         }).join('') +
       '</tbody></table>' +
       (batch.recipe_notes ? '<div class="detail-notes"><span class="label">Recipe notes</span><p>'+escapeHtml(batch.recipe_notes)+'</p></div>' : '') +
@@ -1029,6 +1040,12 @@
         (salesForBatch.map(function(s){
           return '<tr><td>'+fmtDate(s.sale_date)+'</td><td>'+escapeHtml(sizeLookup[s.product_size_id]||'—')+'</td><td>'+s.quantity+'</td><td>'+escapeHtml(s.sold_to||'—')+'</td><td>'+escapeHtml(s.channel||'—')+'</td><td class="mono">'+escapeHtml(s.order_reference||'—')+'</td></tr>';
         }).join('') || '<tr><td colspan="6" class="empty-note">No sales logged yet.</td></tr>') +
+      '</tbody></table>' +
+      '<h3>Losses &amp; discards</h3>' +
+      '<table class="data-table"><thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Reason</th><th>Notes</th></tr></thead><tbody>' +
+        (lossesForBatch.map(function(l){
+          return '<tr><td>'+fmtDate(l.loss_date)+'</td><td>'+escapeHtml(sizeLookup[l.product_size_id]||'—')+'</td><td>'+l.quantity+'</td><td>'+escapeHtml(l.reason||'—')+'</td><td>'+escapeHtml(l.notes||'—')+'</td></tr>';
+        }).join('') || '<tr><td colspan="5" class="empty-note">Nothing discarded from this batch.</td></tr>') +
       '</tbody></table>' +
       '<h3>Log a quick sale from this batch</h3>' +
       '<form id="quickSaleForm" class="inline-form">' +
@@ -1046,6 +1063,17 @@
         '<label>Date<input type="date" id="qsDate" value="'+todayISO()+'"></label>' +
         '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){return r.remaining<=0;})?'disabled':'')+'>Log sale</button>' +
       '</form>' +
+      '<h3>Log a loss or discard</h3>' +
+      '<p class="help-text">For stock that didn\'t get sold — mould, off batch, cracked jar, anything binned rather than sold.</p>' +
+      '<form id="logLossForm" class="inline-form">' +
+        '<label>Size<select id="qlSize">' +
+          breakdown.filter(function(r){ return r.remaining>0; }).map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('') +
+        '</select></label>' +
+        '<label>Qty<input type="number" id="qlQty" min="0.01" step="0.01" required></label>' +
+        '<label>Reason<input type="text" id="qlReason" placeholder="e.g. Mould on top, off taste, jar cracked" required></label>' +
+        '<label>Date<input type="date" id="qlDate" value="'+todayISO()+'"></label>' +
+        '<button type="submit" class="btn btn-secondary" '+(breakdown.every(function(r){return r.remaining<=0;})?'disabled':'')+'>Log loss</button>' +
+      '</form>' +
       '<h3>Label</h3>' +
       '<div class="label-section">' +
         '<div class="form-row">' +
@@ -1061,7 +1089,10 @@
         '<div class="label-preview-wrap"><canvas id="labelCanvas" class="label-canvas"></canvas></div>' +
         '<button id="downloadLabelBtn" class="btn btn-secondary">Download label image</button>' +
         '<p class="help-text">Save this image, then open the NIIMBOT app on your phone, choose Custom / Gallery import, and print it on your label roll.</p>' +
-      '</div>';
+      '</div>' +
+      '<h3>Danger zone</h3>' +
+      '<p class="help-text">Permanently deletes this batch along with every sale and loss recorded against it. Can\'t be undone — use this for test batches or genuine mistakes, not for stock that\'s simply sold out.</p>' +
+      '<button id="deleteBatchBtn" class="btn btn-secondary" style="border-color:var(--danger); color:var(--danger);">Delete this batch</button>';
 
     $('#quickSaleForm').addEventListener('submit', async function(e){
       e.preventDefault();
@@ -1084,6 +1115,43 @@
         openBatchDetail(code);
       }catch(err){
         showToast('Could not log sale: ' + err.message, true);
+      }
+    });
+
+    $('#logLossForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const sizeId = $('#qlSize').value;
+      const rem = remainingForBatchSize(batch.id, sizeId);
+      const qty = Number($('#qlQty').value);
+      if(qty<=0 || qty>rem){ showToast('Quantity must be between 0 and ' + rem, true); return; }
+      try{
+        const { error } = await sb.from('batch_losses').insert({
+          batch_id: batch.id,
+          product_size_id: sizeId,
+          quantity: qty,
+          reason: $('#qlReason').value.trim(),
+          loss_date: $('#qlDate').value || todayISO()
+        });
+        if(error) throw error;
+        showToast('Loss logged.');
+        await loadAll();
+        openBatchDetail(code);
+      }catch(err){
+        showToast('Could not log loss: ' + err.message, true);
+      }
+    });
+
+    $('#deleteBatchBtn').addEventListener('click', async function(){
+      const sure = confirm('Delete batch ' + batch.batch_code + '? This also removes every sale and loss recorded against it. This cannot be undone.');
+      if(!sure) return;
+      try{
+        const { error } = await sb.from('batches').delete().eq('id', batch.id);
+        if(error) throw error;
+        showToast('Batch ' + batch.batch_code + ' deleted.');
+        await loadAll();
+        location.hash = '';
+      }catch(err){
+        showToast('Could not delete batch: ' + err.message, true);
       }
     });
 
