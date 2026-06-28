@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Edible Alchemy — Batch Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bevan&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F3ECDA;
-    --surface:#FBF7ED;
-    --ink:#2B2118;
+    --bg:#F6EFE2;
+    --surface:#FFFFFF;
+    --ink:#17120D;
     --ink-soft:#6B5E4F;
-    --line:#DCD0B4;
-    --kraft:#A8763E;
-    --kraft-dark:#7E591F;
-    --seed:#4F6B3F;
-    --seed-dark:#3A5230;
+    --line:#E3D6BD;
+    --kraft:#BC9670;
+    --kraft-dark:#8C6B45;
+    --good:#4F6B3F;
+    --good-bg:#E1E8D8;
     --danger:#B5402A;
     --radius:10px;
-    --shadow:0 1px 2px rgba(43,33,24,0.08), 0 4px 10px rgba(43,33,24,0.06);
+    --shadow:0 1px 2px rgba(23,18,13,0.08), 0 4px 10px rgba(23,18,13,0.06);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -31,7 +31,7 @@
     min-height:100vh;
   }
   .hidden{display:none !important;}
-  h1,h2,h3{font-family:'Fraunces', serif; font-weight:650; margin:0 0 .4em;}
+  h1,h2,h3{font-family:'Bevan', serif; font-weight:400; margin:0 0 .4em;}
   h2{font-size:1.4rem;}
   h3{font-size:1.1rem; margin-top:1.6em; color:var(--ink);}
   p{line-height:1.5;}
@@ -47,8 +47,8 @@
     cursor:pointer; transition:transform .08s ease, opacity .15s ease;
   }
   .btn:active{transform:translateY(1px);}
-  .btn-primary{background:var(--seed); color:#fff;}
-  .btn-primary:hover{background:var(--seed-dark);}
+  .btn-primary{background:var(--ink); color:#fff;}
+  .btn-primary:hover{background:#000;}
   .btn-secondary{background:var(--surface); color:var(--ink); border:1px solid var(--line);}
   .btn-secondary:hover{border-color:var(--ink-soft);}
   .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid transparent;}
@@ -72,7 +72,7 @@
   .empty-note{color:var(--ink-soft); font-style:italic; padding:.6em 0;}
 
   /* ---------- login ---------- */
-  .login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5em;}
+  .login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5em; background:var(--kraft);}
   .login-card{
     background:var(--surface); border:1px solid var(--line); border-radius:14px;
     box-shadow:var(--shadow); padding:2.2em 2em; width:100%; max-width:380px; text-align:center;
@@ -86,11 +86,11 @@
   .app{min-height:100vh; display:flex; flex-direction:column;}
   .app-header{
     display:flex; align-items:center; gap:1.2em; flex-wrap:wrap;
-    padding:.9em 1.4em; background:var(--surface); border-bottom:1px solid var(--line);
+    padding:.9em 1.4em; background:var(--surface); border-bottom:2px solid var(--kraft);
     position:sticky; top:0; z-index:10;
   }
   .brand{display:flex; align-items:center; gap:.6em;}
-  .brand-title-sm{font-family:'Fraunces', serif; font-weight:650; font-size:1.05rem; line-height:1.1;}
+  .brand-title-sm{font-family:'Bevan', serif; font-weight:400; font-size:1.05rem; line-height:1.1;}
   .brand-eyebrow{font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);}
   .tabs{display:flex; gap:.3em; flex-wrap:wrap; margin-left:auto;}
   .tab-btn{
@@ -107,7 +107,7 @@
     padding:.25em .65em; border-radius:99px; text-transform:uppercase;
   }
   .pill{font-size:.72rem; font-weight:600; padding:.2em .6em; border-radius:99px;}
-  .pill-active{background:#E1E8D8; color:var(--seed-dark);}
+  .pill-active{background:var(--good-bg); color:var(--good);}
   .pill-low{background:#F5E7CB; color:#8A6512;}
   .pill-out{background:#F4DCD2; color:var(--danger);}
   .size-chip{
@@ -205,12 +205,12 @@
 <!-- ============== LOGIN ============== -->
 <div id="loginView" class="login-screen">
   <div class="login-card">
-    <svg class="brand-mark-svg" viewBox="0 0 48 56" width="38" height="44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 4 H29 V18 L40 46 C41.5 50 38 53 33 53 H15 C10 53 6.5 50 8 46 L19 18 Z"/>
-      <path d="M12.5 39 H35.5"/>
-      <path d="M24 39 V27"/>
-      <path d="M24 31 C19 31 17 27 18 23 C22 23 24 27 24 31 Z"/>
-      <path d="M24 27 C29 27 31 23 30 19 C26 19 24 23 24 27 Z"/>
+    <svg class="brand-mark-svg" viewBox="0 0 48 56" width="40" height="46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 4 H29 V18 L40 45 C41.5 49.5 38.5 52.5 34 52.5 H14 C9.5 52.5 6.5 49.5 8 45 L19 18 Z"/>
+      <path d="M11 38 C11 41 13 42.5 16 42.5 H32 C35 42.5 37 41 37 38 L37 36.5 H11 Z" fill="currentColor" stroke="none"/>
+      <path d="M24 36.5 V25"/>
+      <path d="M24 29 C19.5 29 18 25.3 18.6 21.6 C23 21.8 24.6 25.3 24 29 Z"/>
+      <path d="M24 25.5 C28.5 25.5 30 21.8 29.4 18.1 C25 18.3 23.4 21.8 24 25.5 Z"/>
     </svg>
     <h1 class="brand-title">Edible Alchemy</h1>
     <p class="brand-sub">Batch Tracker</p>
@@ -231,12 +231,12 @@
 <div id="appView" class="app hidden">
   <header class="app-header">
     <div class="brand">
-      <svg class="brand-mark-svg" viewBox="0 0 48 56" width="24" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 4 H29 V18 L40 46 C41.5 50 38 53 33 53 H15 C10 53 6.5 50 8 46 L19 18 Z"/>
-        <path d="M12.5 39 H35.5"/>
-        <path d="M24 39 V27"/>
-        <path d="M24 31 C19 31 17 27 18 23 C22 23 24 27 24 31 Z"/>
-        <path d="M24 27 C29 27 31 23 30 19 C26 19 24 23 24 27 Z"/>
+      <svg class="brand-mark-svg" viewBox="0 0 48 56" width="25" height="29" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 4 H29 V18 L40 45 C41.5 49.5 38.5 52.5 34 52.5 H14 C9.5 52.5 6.5 49.5 8 45 L19 18 Z"/>
+        <path d="M11 38 C11 41 13 42.5 16 42.5 H32 C35 42.5 37 41 37 38 L37 36.5 H11 Z" fill="currentColor" stroke="none"/>
+        <path d="M24 36.5 V25"/>
+        <path d="M24 29 C19.5 29 18 25.3 18.6 21.6 C23 21.8 24.6 25.3 24 29 Z"/>
+        <path d="M24 25.5 C28.5 25.5 30 21.8 29.4 18.1 C25 18.3 23.4 21.8 24 25.5 Z"/>
       </svg>
       <div>
         <div class="brand-title-sm">Edible Alchemy</div>
@@ -1127,9 +1127,9 @@
       try{ await document.fonts.ready; }catch(e){}
     }
 
-    ctx.fillStyle = '#FBF7ED';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle = '#2B2118';
+    ctx.strokeStyle = '#17120D';
     ctx.lineWidth = Math.max(2, h*0.01);
     ctx.strokeRect(3,3,w-6,h-6);
 
@@ -1152,7 +1152,7 @@
     }
     cursorY -= (codeLineH - dateLineH);
     ctx.font = "600 " + Math.round(h*0.115) + "px 'IBM Plex Mono', monospace";
-    ctx.fillStyle = '#2B2118';
+    ctx.fillStyle = '#17120D';
     ctx.fillText(batch.batch_code, pad, cursorY, textMaxWidth);
 
     // ---- top block: brand + product name + size ----
@@ -1160,12 +1160,12 @@
     ctx.font = Math.round(h*0.08) + "px 'IBM Plex Sans', sans-serif";
     ctx.fillText('EDIBLE ALCHEMY', pad, pad + h*0.06);
 
-    ctx.fillStyle = '#2B2118';
-    ctx.font = "650 " + Math.round(h*0.16) + "px 'Fraunces', serif";
-    const nameEndY = wrapText(ctx, product.name, pad, pad + h*0.25, textMaxWidth, h*0.17);
+    ctx.fillStyle = '#17120D';
+    ctx.font = Math.round(h*0.17) + "px 'Bevan', serif";
+    const nameEndY = wrapText(ctx, product.name, pad, pad + h*0.27, textMaxWidth, h*0.18);
 
     if(sizeLabel){
-      ctx.fillStyle = '#A8763E';
+      ctx.fillStyle = '#8C6B45';
       ctx.font = "600 " + Math.round(h*0.075) + "px 'IBM Plex Sans', sans-serif";
       ctx.fillText(sizeLabel, pad, nameEndY + h*0.12, textMaxWidth);
     }
@@ -1173,7 +1173,7 @@
     // ---- QR code, top right ----
     const qrCanvas = document.createElement('canvas');
     const url = location.origin + location.pathname + '#/batch/' + encodeURIComponent(batch.batch_code);
-    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#2B2118', light:'#FBF7ED' } });
+    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#17120D', light:'#FFFFFF' } });
     ctx.drawImage(qrCanvas, w - qrSize - pad, pad, qrSize, qrSize);
   }
 
