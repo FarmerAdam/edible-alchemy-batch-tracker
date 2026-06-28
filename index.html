@@ -420,14 +420,6 @@
   const PX_PER_MM = 8;
   const LABEL_PRESETS = { "50x30":{w:50,h:30}, "40x30":{w:40,h:30}, "30x20":{w:30,h:20} };
 
-  const DEFAULT_SIZES_BY_CATEGORY = {
-    'Live ferments': ['480g jar','2kg jar','22kg bucket','Brine (1L)'],
-    'Packaged hot sauce': ['100ml','200ml','750ml','5L'],
-    'Syrups and candy': ['200ml','750ml','5L','90g'],
-    'Salts': ['90g','300g','1.6kg'],
-    'Other / side quests': []
-  };
-
   const CATEGORY_COLORS = {
     'Live ferments':        { fg:'#4F6B3F', bg:'#E1E8D8' },
     'Packaged hot sauce':   { fg:'#B5402A', bg:'#F4DCD2' },
@@ -753,6 +745,10 @@
   }
 
   function renderPSizeEditor(){
+    if(pSizeRowState.length===0){
+      $('#pSizeEditor').innerHTML = '<p class="empty-note">No sizes yet — add one below, call it whatever she actually uses (e.g. "480g jar", "1.6kg bag", "King size").</p>';
+      return;
+    }
     $('#pSizeEditor').innerHTML = pSizeRowState.map(function(label, idx){
       return '<div class="size-editor-row">' +
         '<input type="text" class="p-size-input" data-idx="'+idx+'" value="'+escapeHtml(label)+'" placeholder="e.g. 480g jar">' +
@@ -772,15 +768,6 @@
   $('#pAddSizeBtn').addEventListener('click', function(){
     pSizeRowState.push('');
     renderPSizeEditor();
-  });
-  $('#pCategory').addEventListener('change', function(){
-    if(pSizeRowState.length===0){
-      const catId = $('#pCategory').value;
-      const cat = state.categories.find(function(c){ return c.id===catId; });
-      const defaults = cat ? (DEFAULT_SIZES_BY_CATEGORY[cat.name] || []) : [];
-      pSizeRowState = defaults.slice();
-      renderPSizeEditor();
-    }
   });
 
   $('#addProductForm').addEventListener('submit', async function(e){
@@ -1209,6 +1196,7 @@
   // ====================================================================
   // GO
   // ====================================================================
+  renderPSizeEditor();
   initAuth();
 
 })();
