@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Edible Alchemy — Batch Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDEFE3;
+    --surface:#FBFBF4;
+    --ink:#1F2A1B;
+    --ink-soft:#5B6754;
+    --line:#D6D6C2;
+    --amber:#A8642C;
+    --amber-dark:#7E4A1F;
+    --ferment:#5F7438;
+    --ferment-bg:#E3E8D6;
+    --hotsauce:#C1432A;
+    --hotsauce-bg:#F3DCD3;
+    --other:#5B6754;
+    --other-bg:#E4E4D8;
+    --danger:#B43B2F;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(31,42,27,0.08), 0 4px 10px rgba(31,42,27,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .hidden{display:none !important;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:650; margin:0 0 .4em;}
+  h2{font-size:1.4rem;}
+  h3{font-size:1.1rem; margin-top:1.6em; color:var(--ink);}
+  p{line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  button{font-family:inherit;}
+
+  /* ---------- buttons / forms ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.4em;
+    border:none; border-radius:8px; padding:.65em 1.2em; font-size:.95rem; font-weight:600;
+    cursor:pointer; transition:transform .08s ease, opacity .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--amber); color:#fff;}
+  .btn-primary:hover{background:var(--amber-dark);}
+  .btn-secondary{background:var(--surface); color:var(--ink); border:1px solid var(--line);}
+  .btn-secondary:hover{border-color:var(--ink-soft);}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid transparent;}
+  .btn-ghost:hover{border-color:var(--line);}
+  .btn-block{width:100%;}
+  .btn[disabled]{opacity:.5; cursor:not-allowed;}
+
+  label{display:block; font-size:.85rem; font-weight:500; color:var(--ink-soft); margin-bottom:1em;}
+  input,select,textarea{
+    display:block; width:100%; margin-top:.35em; padding:.6em .7em;
+    border:1px solid var(--line); border-radius:7px; background:var(--surface);
+    font-family:inherit; font-size:1rem; color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--amber); outline-offset:1px; border-color:var(--amber);}
+  textarea{min-height:5em; resize:vertical;}
+  form .form-row{display:flex; gap:1em; flex-wrap:wrap;}
+  form .form-row > label{flex:1; min-width:160px;}
+  .form-error{color:var(--danger); font-size:.9rem; margin-top:.5em;}
+  .help-text{color:var(--ink-soft); font-size:.85rem; margin-top:.6em;}
+  .empty-note{color:var(--ink-soft); font-style:italic; padding:.6em 0;}
+
+  /* ---------- login ---------- */
+  .login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5em;
+  }
+  .login-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--shadow); padding:2.2em 2em; width:100%; max-width:380px; text-align:center;
+  }
+  .brand-mark{font-size:2.4rem; line-height:1; margin-bottom:.2em;}
+  .brand-title{font-size:1.7rem; margin-bottom:0;}
+  .brand-sub{color:var(--ink-soft); letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; margin:0 0 1.6em;}
+  .login-card form{text-align:left;}
+
+  /* ---------- app shell ---------- */
+  .app{min-height:100vh; display:flex; flex-direction:column;}
+  .app-header{
+    display:flex; align-items:center; gap:1.2em; flex-wrap:wrap;
+    padding:.9em 1.4em; background:var(--surface); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:10;
+  }
+  .brand{display:flex; align-items:center; gap:.6em;}
+  .brand .brand-mark{font-size:1.5rem; margin:0;}
+  .brand-title-sm{font-family:'Fraunces', serif; font-weight:650; font-size:1.05rem; line-height:1.1;}
+  .brand-eyebrow{font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);}
+  .tabs{display:flex; gap:.3em; flex-wrap:wrap; margin-left:auto;}
+  .tab-btn{
+    background:transparent; border:1px solid transparent; border-radius:7px; padding:.5em .9em;
+    font-size:.9rem; font-weight:500; color:var(--ink-soft); cursor:pointer;
+  }
+  .tab-btn:hover{border-color:var(--line);}
+  .tab-btn.active{background:var(--bg); color:var(--ink); border-color:var(--line); font-weight:600;}
+  main{flex:1; padding:1.6em 1.4em 3em; max-width:920px; width:100%; margin:0 auto;}
+  .view section{margin:0;}
+
+  /* ---------- category pills ---------- */
+  .cat-pill{
+    display:inline-block; font-size:.72rem; font-weight:600; letter-spacing:.03em;
+    padding:.25em .65em; border-radius:99px; text-transform:uppercase;
+  }
+  .cat-pill.cat-ferment{background:var(--ferment-bg); color:var(--ferment);}
+  .cat-pill.cat-hot_sauce{background:var(--hotsauce-bg); color:var(--hotsauce);}
+  .cat-pill.cat-other{background:var(--other-bg); color:var(--other);}
+
+  .pill{font-size:.72rem; font-weight:600; padding:.2em .6em; border-radius:99px;}
+  .pill-active{background:#E3E8D6; color:var(--ferment);}
+  .pill-low{background:#F5E7CB; color:#8A6512;}
+  .pill-out{background:#F3DCD3; color:var(--hotsauce);}
+
+  /* ---------- dashboard ---------- */
+  #dashboardProducts{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1.1em; margin-top:1em;}
+  .product-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:1.1em 1.2em; box-shadow:var(--shadow);
+  }
+  .product-card-head{display:flex; align-items:center; gap:.6em; margin-bottom:.3em;}
+  .product-card-head h3{margin:0; font-size:1.05rem;}
+  .product-stock{font-family:'IBM Plex Mono', monospace; font-size:1.6rem; font-weight:600; margin:.3em 0 .7em;}
+  .product-stock span{font-family:'IBM Plex Sans', sans-serif; font-size:.7rem; font-weight:500; color:var(--ink-soft); text-transform:uppercase; margin-left:.4em;}
+  .batch-list{display:flex; flex-direction:column; gap:.4em;}
+  .batch-row{
+    display:flex; align-items:center; gap:.6em; background:var(--bg); border:1px solid transparent;
+    border-radius:7px; padding:.45em .6em; cursor:pointer; text-align:left; width:100%;
+  }
+  .batch-row:hover{border-color:var(--line);}
+  .batch-row .batch-code{font-family:'IBM Plex Mono', monospace; font-size:.82rem; font-weight:600;}
+  .batch-row .batch-rem{margin-left:auto; font-size:.8rem; color:var(--ink-soft);}
+
+  /* ---------- tables ---------- */
+  .data-table{width:100%; border-collapse:collapse; margin-top:.6em; font-size:.92rem;}
+  .data-table th,.data-table td{text-align:left; padding:.55em .5em; border-bottom:1px solid var(--line);}
+  .data-table th{color:var(--ink-soft); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em;}
+
+  /* ---------- batch detail ---------- */
+  .detail-head{margin-bottom:.8em;}
+  .batch-code-lg{font-family:'IBM Plex Mono', monospace; font-size:1.05rem; color:var(--ink-soft); margin:.2em 0 0;}
+  .detail-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1em; margin:1em 0;}
+  .detail-grid > div{display:flex; flex-direction:column; gap:.2em;}
+  .detail-grid .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .detail-grid span:last-child{font-size:1.1rem; font-weight:600; font-family:'IBM Plex Mono', monospace;}
+  .text-out{color:var(--hotsauce) !important;}
+  .detail-notes{margin:1em 0;}
+  .detail-notes .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); display:block; margin-bottom:.2em;}
+  .inline-form{display:flex; gap:1em; flex-wrap:wrap; align-items:flex-end; margin-top:.6em;}
+  .inline-form label{flex:1; min-width:140px; margin-bottom:0;}
+
+  /* ---------- label ticket ---------- */
+  .label-section{margin-top:.6em;}
+  .label-section label{max-width:220px;}
+  .label-preview-wrap{
+    position:relative; display:inline-block; margin:1em 0; padding:18px;
+    background:var(--surface); border:2px dashed var(--line); border-radius:10px;
+  }
+  .label-preview-wrap::before,.label-preview-wrap::after{
+    content:''; position:absolute; top:8px; width:9px; height:9px; border-radius:50%;
+    background:var(--bg); border:1px solid var(--line);
+  }
+  .label-preview-wrap::before{left:8px;}
+  .label-preview-wrap::after{right:8px;}
+  #labelCanvas,.label-canvas{max-width:100%; height:auto; display:block; border-radius:3px;}
+
+  /* ---------- new sale rows ---------- */
+  .ns-row{
+    display:flex; align-items:center; gap:.8em; padding:.5em .2em; border-bottom:1px solid var(--line);
+  }
+  .ns-row .batch-code{font-family:'IBM Plex Mono', monospace; font-size:.88rem; min-width:150px;}
+  .ns-row .ns-rem{color:var(--ink-soft); font-size:.85rem; min-width:80px;}
+  .ns-row .ns-qty{width:90px; margin:0;}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; bottom:1.4em; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:.7em 1.3em; border-radius:99px;
+    font-size:.9rem; box-shadow:var(--shadow); z-index:100; max-width:90vw; text-align:center;
+  }
+  .toast.toast-error{background:var(--danger);}
+
+  @media (max-width:640px){
+    .app-header{padding:.8em 1em;}
+    .tabs{order:3; width:100%; margin-left:0; justify-content:space-between;}
+    main{padding:1.2em 1em 3em;}
+    .detail-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- ============== LOGIN ============== -->
+<div id="loginView" class="login-screen">
+  <div class="login-card">
+    <div class="brand-mark">⚗</div>
+    <h1 class="brand-title">Edible Alchemy</h1>
+    <p class="brand-sub">Batch Tracker</p>
+    <form id="loginForm">
+      <label>Email
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </label>
+      <label>Password
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      <p id="loginError" class="form-error hidden"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ============== APP ============== -->
+<div id="appView" class="app hidden">
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">⚗</span>
+      <div>
+        <div class="brand-title-sm">Edible Alchemy</div>
+        <div class="brand-eyebrow">Batch Tracker</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn" data-view="dashboard">Dashboard</button>
+      <button class="tab-btn" data-view="newBatch">New batch</button>
+      <button class="tab-btn" data-view="newSale">Log a sale</button>
+      <button class="tab-btn" data-view="products">Products</button>
+    </nav>
+    <button id="signOutBtn" class="btn btn-ghost">Sign out</button>
+  </header>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <h2>Dashboard</h2>
+      <p class="help-text">Tap any batch to view its details, log sales against it, or print its label.</p>
+      <div id="dashboardProducts"></div>
+    </section>
+
+    <!-- NEW BATCH -->
+    <section id="view-newBatch" class="view hidden">
+      <h2>New batch</h2>
+      <form id="newBatchForm">
+        <div class="form-row">
+          <label>Product
+            <select id="nbProduct" required></select>
+          </label>
+          <label>Date made
+            <input type="date" id="nbDate" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Quantity produced
+            <input type="number" id="nbQty" min="0.01" step="0.01" required>
+          </label>
+          <label>Unit
+            <input type="text" id="nbUnit" placeholder="bottles / jars">
+          </label>
+          <label>Best before (optional — auto-filled if left blank)
+            <input type="date" id="nbBestBefore">
+          </label>
+        </div>
+        <label>Recipe notes
+          <textarea id="nbRecipeNotes" placeholder="Ingredients / recipe as made this run"></textarea>
+        </label>
+        <label>Process notes
+          <textarea id="nbProcessNotes" placeholder="Ferment days, pH, brine %, scoville, anything that varied this batch"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Create batch</button>
+      </form>
+
+      <div id="newBatchResult" class="hidden">
+        <h3>Batch created: <span id="newBatchResultCode" class="mono"></span></h3>
+        <p><a href="#" id="newBatchResultLink">Open this batch →</a></p>
+        <div class="label-section">
+          <label>Label size
+            <select id="newBatchLabelPreset">
+              <option value="50x30">50 × 30 mm</option>
+              <option value="40x30">40 × 30 mm</option>
+              <option value="30x20">30 × 20 mm</option>
+            </select>
+          </label>
+          <div class="label-preview-wrap">
+            <canvas id="newBatchLabelCanvas" class="label-canvas"></canvas>
+          </div>
+          <button id="newBatchDownloadLabelBtn" class="btn btn-secondary">Download label image</button>
+          <p class="help-text">Save this image, then open the NIIMBOT app, choose Custom / Gallery import, and print it on your label roll.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW SALE (split across batches) -->
+    <section id="view-newSale" class="view hidden">
+      <h2>Log a sale</h2>
+      <p class="help-text">If one order is made up from more than one batch, enter the quantity to take from each — e.g. 15 from one batch and 4 from another.</p>
+      <form id="newSaleForm">
+        <label>Product
+          <select id="nsProduct" required></select>
+        </label>
+        <div id="nsBatchRows">
+          <p class="empty-note">Choose a product to see available batches.</p>
+        </div>
+        <div class="form-row" style="margin-top:1em;">
+          <label>Sold to
+            <input type="text" id="nsSoldTo" placeholder="e.g. Beechworth Farmers Market">
+          </label>
+          <label>Channel
+            <select id="nsChannel">
+              <option value="farmers_market">Farmers market</option>
+              <option value="wholesale">Wholesale</option>
+              <option value="online">Online</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Date
+            <input type="date" id="nsDate" required>
+          </label>
+        </div>
+        <label>Notes
+          <textarea id="nsNotes"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Log sale</button>
+      </form>
+    </section>
+
+    <!-- BATCH DETAIL (also the QR landing page) -->
+    <section id="view-batchDetail" class="view hidden">
+      <p><a href="#/" id="backToDashboard">← Back to dashboard</a></p>
+      <div id="batchDetailContent"></div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="view-products" class="view hidden">
+      <h2>Products</h2>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Code</th><th>Category</th><th>Unit</th><th>Shelf life (days)</th></tr></thead>
+        <tbody id="productsTableBody"></tbody>
+      </table>
+
+      <h3>Add a product</h3>
+      <form id="addProductForm">
+        <div class="form-row">
+          <label>Name
+            <input type="text" id="pName" required placeholder="e.g. Habanero Hot Sauce">
+          </label>
+          <label>Code (used in batch numbers)
+            <input type="text" id="pCode" required maxlength="6" placeholder="e.g. HAB" style="text-transform:uppercase;">
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Category
+            <select id="pCategory">
+              <option value="ferment">Ferment</option>
+              <option value="hot_sauce">Hot sauce</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Default unit
+            <input type="text" id="pUnit" placeholder="bottles / jars" value="bottles">
+          </label>
+          <label>Default shelf life (days)
+            <input type="number" id="pShelfLife" min="1">
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Add product</button>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script>
+(function(){
+
+  // ====================================================================
+  // CONFIG — fill these in from your Supabase project (Settings → API)
+  // ====================================================================
+  const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
+  const PX_PER_MM = 8; // canvas resolution for printed labels (~203dpi)
+  const LABEL_PRESETS = { "50x30":{w:50,h:30}, "40x30":{w:40,h:30}, "30x20":{w:30,h:20} };
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const state = { products:[], batches:[], sales:[] };
+
+  // ====================================================================
+  // small helpers
+  // ====================================================================
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+
+  function escapeHtml(str){
+    return String(str==null?'':str).replace(/[&<>"']/g, function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
+  function fmtDate(d){
+    if(!d) return '—';
+    const dt = new Date(d+'T00:00:00');
+    return dt.toLocaleDateString('en-AU', {day:'2-digit', month:'2-digit', year:'2-digit'});
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function ddmmyy(dateObj){
+    return pad2(dateObj.getDate()) + pad2(dateObj.getMonth()+1) + String(dateObj.getFullYear()).slice(-2);
+  }
+  function categoryLabel(cat){
+    return cat==='ferment' ? 'Ferment' : cat==='hot_sauce' ? 'Hot sauce' : 'Other';
+  }
+
+  let toastTimer;
+  function showToast(msg, isError){
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    el.classList.toggle('toast-error', !!isError);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.add('hidden'); }, 4000);
+  }
+
+  // ====================================================================
+  // AUTH
+  // ====================================================================
+  async function initAuth(){
+    const { data } = await sb.auth.getSession();
+    if(data && data.session){ await onSignedIn(); } else { showLogin(); }
+    sb.auth.onAuthStateChange(function(event, session){
+      if(session){ onSignedIn(); } else { showLogin(); }
+    });
+  }
+  function showLogin(){
+    $('#loginView').classList.remove('hidden');
+    $('#appView').classList.add('hidden');
+  }
+  async function onSignedIn(){
+    $('#loginView').classList.add('hidden');
+    $('#appView').classList.remove('hidden');
+    await loadAll();
+    routeFromHash();
+  }
+
+  $('#loginForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const email = $('#loginEmail').value.trim();
+    const password = $('#loginPassword').value;
+    $('#loginError').classList.add('hidden');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){
+      $('#loginError').textContent = error.message;
+      $('#loginError').classList.remove('hidden');
+    }
+  });
+
+  $('#signOutBtn').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    location.hash = '';
+  });
+
+  // ====================================================================
+  // DATA LOADING
+  // ====================================================================
+  async function loadAll(){
+    try{
+      const [pRes, bRes, sRes] = await Promise.all([
+        sb.from('products').select('*').eq('active', true).order('name'),
+        sb.from('batches').select('*').eq('archived', false).order('batch_date', { ascending:false }),
+        sb.from('batch_sales').select('*')
+      ]);
+      if(pRes.error) throw pRes.error;
+      if(bRes.error) throw bRes.error;
+      if(sRes.error) throw sRes.error;
+      state.products = pRes.data || [];
+      state.batches = bRes.data || [];
+      state.sales = sRes.data || [];
+      populateProductSelects();
+      renderDashboard();
+      renderProductsView();
+    }catch(err){
+      showToast('Could not load data: ' + err.message, true);
+    }
+  }
+
+  function remainingForBatch(batchId){
+    const batch = state.batches.find(function(b){ return b.id===batchId; });
+    const produced = batch ? Number(batch.quantity_produced) : 0;
+    const sold = state.sales
+      .filter(function(s){ return s.batch_id===batchId; })
+      .reduce(function(sum,s){ return sum + Number(s.quantity); }, 0);
+    return produced - sold;
+  }
+
+  function findBatchByCode(code){
+    return state.batches.find(function(b){ return b.batch_code===code; });
+  }
+
+  // ====================================================================
+  // ROUTING
+  // ====================================================================
+  window.addEventListener('hashchange', routeFromHash);
+
+  function routeFromHash(){
+    const hash = location.hash.replace(/^#\/?/, '');
+    if(hash.indexOf('batch/')===0){
+      openBatchDetail(decodeURIComponent(hash.slice('batch/'.length)));
+    } else if(['newBatch','newSale','products','dashboard'].indexOf(hash)>=0){
+      showView(hash);
+    } else {
+      showView('dashboard');
+    }
+  }
+
+  function showView(name){
+    $all('.view').forEach(function(v){ v.classList.add('hidden'); });
+    $('#view-'+name).classList.remove('hidden');
+    $all('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.view===name); });
+    if(name==='newBatch') resetNewBatchForm();
+    if(name==='newSale') resetNewSaleForm();
+  }
+
+  $all('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ location.hash = '#/' + btn.dataset.view; });
+  });
+  $('#backToDashboard').addEventListener('click', function(e){ e.preventDefault(); location.hash = ''; });
+
+  // ====================================================================
+  // DASHBOARD
+  // ====================================================================
+  function renderDashboard(){
+    const container = $('#dashboardProducts');
+    container.innerHTML = '';
+
+    if(state.products.length===0){
+      container.innerHTML = '<p class="empty-note">No products yet — add one in the Products tab to get started.</p>';
+      return;
+    }
+
+    state.products.forEach(function(product){
+      const batchesForProduct = state.batches.filter(function(b){ return b.product_id===product.id; })
+        .sort(function(a,b){ return b.batch_date.localeCompare(a.batch_date); });
+      const totalRemaining = batchesForProduct.reduce(function(sum,b){ return sum + remainingForBatch(b.id); }, 0);
+
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML =
+        '<div class="product-card-head">' +
+          '<span class="cat-pill cat-'+product.category+'">'+categoryLabel(product.category)+'</span>' +
+        '</div>' +
+        '<h3>'+escapeHtml(product.name)+'</h3>' +
+        '<div class="product-stock">'+totalRemaining+'<span>'+escapeHtml(product.default_unit||'units')+' in stock</span></div>' +
+        '<div class="batch-list">' +
+          (batchesForProduct.map(function(b){
+            const rem = remainingForBatch(b.id);
+            const pillClass = rem<=0 ? 'pill-out' : (rem<=5 ? 'pill-low' : 'pill-active');
+            const pillText = rem<=0 ? 'Sold out' : (rem<=5 ? 'Low stock' : 'Active');
+            return '<button class="batch-row" data-code="'+escapeHtml(b.batch_code)+'">' +
+              '<span class="batch-code">'+escapeHtml(b.batch_code)+'</span>' +
+              '<span class="batch-rem">'+rem+' left</span>' +
+              '<span class="pill '+pillClass+'">'+pillText+'</span>' +
+            '</button>';
+          }).join('') || '<p class="empty-note">No batches yet.</p>') +
+        '</div>';
+      container.appendChild(card);
+    });
+
+    $all('.batch-row', container).forEach(function(btn){
+      btn.addEventListener('click', function(){ location.hash = '#/batch/' + btn.dataset.code; });
+    });
+  }
+
+  // ====================================================================
+  // PRODUCT SELECTS / PRODUCTS VIEW
+  // ====================================================================
+  function populateProductSelects(){
+    const opts = '<option value="">Select…</option>' + state.products.map(function(p){
+      return '<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>';
+    }).join('');
+    $('#nbProduct').innerHTML = opts;
+    $('#nsProduct').innerHTML = opts;
+  }
+
+  function renderProductsView(){
+    const tbody = $('#productsTableBody');
+    tbody.innerHTML = state.products.map(function(p){
+      return '<tr>' +
+        '<td>'+escapeHtml(p.name)+'</td>' +
+        '<td class="mono">'+escapeHtml(p.code)+'</td>' +
+        '<td><span class="cat-pill cat-'+p.category+'">'+categoryLabel(p.category)+'</span></td>' +
+        '<td>'+escapeHtml(p.default_unit||'—')+'</td>' +
+        '<td>'+(p.default_shelf_life_days==null?'—':p.default_shelf_life_days)+'</td>' +
+      '</tr>';
+    }).join('') || '<tr><td colspan="5" class="empty-note">No products yet.</td></tr>';
+  }
+
+  $('#addProductForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    try{
+      const { error } = await sb.from('products').insert({
+        name: $('#pName').value.trim(),
+        code: $('#pCode').value.trim().toUpperCase(),
+        category: $('#pCategory').value,
+        default_unit: $('#pUnit').value.trim() || 'bottles',
+        default_shelf_life_days: $('#pShelfLife').value ? Number($('#pShelfLife').value) : null
+      });
+      if(error) throw error;
+      showToast('Product added.');
+      $('#addProductForm').reset();
+      $('#pUnit').value = 'bottles';
+      await loadAll();
+    }catch(err){
+      showToast('Could not add product: ' + err.message, true);
+    }
+  });
+
+  // ====================================================================
+  // NEW BATCH
+  // ====================================================================
+  function resetNewBatchForm(){
+    $('#newBatchForm').reset();
+    $('#newBatchResult').classList.add('hidden');
+    $('#nbDate').value = todayISO();
+  }
+
+  async function generateBatchCode(productCode, dateObj){
+    const datePart = ddmmyy(dateObj);
+    const prefix = productCode + '-' + datePart + '-';
+    const { data, error } = await sb.from('batches').select('batch_code').like('batch_code', prefix+'%');
+    if(error) throw error;
+    const seq = (data ? data.length : 0) + 1;
+    return prefix + pad2(seq);
+  }
+
+  $('#newBatchForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const productId = $('#nbProduct').value;
+    const product = state.products.find(function(p){ return p.id===productId; });
+    if(!product){ showToast('Choose a product first', true); return; }
+
+    const qty = Number($('#nbQty').value);
+    const date = $('#nbDate').value || todayISO();
+    const unit = $('#nbUnit').value.trim() || product.default_unit || 'bottles';
+    let bestBefore = $('#nbBestBefore').value;
+    if(!bestBefore && product.default_shelf_life_days){
+      const d = new Date(date+'T00:00:00');
+      d.setDate(d.getDate() + product.default_shelf_life_days);
+      bestBefore = d.toISOString().slice(0,10);
+    }
+
+    try{
+      const code = await generateBatchCode(product.code, new Date(date+'T00:00:00'));
+      const { data, error } = await sb.from('batches').insert({
+        batch_code: code,
+        product_id: product.id,
+        batch_date: date,
+        quantity_produced: qty,
+        unit: unit,
+        best_before_date: bestBefore || null,
+        recipe_notes: $('#nbRecipeNotes').value.trim() || null,
+        process_notes: $('#nbProcessNotes').value.trim() || null
+      }).select().single();
+      if(error) throw error;
+
+      showToast('Batch ' + code + ' created.');
+      await loadAll();
+      const newBatch = findBatchByCode(code);
+
+      $('#newBatchResult').classList.remove('hidden');
+      $('#newBatchResultCode').textContent = code;
+      $('#newBatchResultLink').onclick = function(ev){ ev.preventDefault(); location.hash = '#/batch/' + code; };
+
+      const preset = $('#newBatchLabelPreset');
+      preset.onchange = function(){ renderLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value); };
+      await renderLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value);
+      $('#newBatchDownloadLabelBtn').onclick = function(){ downloadLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value); };
+    }catch(err){
+      showToast('Could not create batch: ' + err.message, true);
+    }
+  });
+
+  // ====================================================================
+  // LOG A SALE (split across batches)
+  // ====================================================================
+  function resetNewSaleForm(){
+    $('#newSaleForm').reset();
+    $('#nsBatchRows').innerHTML = '<p class="empty-note">Choose a product to see available batches.</p>';
+    $('#nsDate').value = todayISO();
+  }
+
+  $('#nsProduct').addEventListener('change', function(){
+    const productId = $('#nsProduct').value;
+    const container = $('#nsBatchRows');
+    if(!productId){
+      container.innerHTML = '<p class="empty-note">Choose a product to see available batches.</p>';
+      return;
+    }
+    const batchesForProduct = state.batches.filter(function(b){ return b.product_id===productId; })
+      .sort(function(a,b){ return a.batch_date.localeCompare(b.batch_date); }); // oldest first
+
+    if(batchesForProduct.length===0){
+      container.innerHTML = '<p class="empty-note">No batches for this product yet.</p>';
+      return;
+    }
+    container.innerHTML = batchesForProduct.map(function(b){
+      const rem = remainingForBatch(b.id);
+      return '<div class="ns-row" data-batch-id="'+b.id+'" data-rem="'+rem+'">' +
+        '<span class="batch-code">'+escapeHtml(b.batch_code)+'</span>' +
+        '<span class="ns-rem">'+rem+' left</span>' +
+        '<input type="number" class="ns-qty" min="0" max="'+rem+'" step="0.01" value="0" '+(rem<=0?'disabled':'')+'>' +
+      '</div>';
+    }).join('');
+  });
+
+  $('#newSaleForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const rows = $all('.ns-row', $('#nsBatchRows'));
+    const allocations = rows.map(function(r){
+      return {
+        batchId: r.dataset.batchId,
+        rem: Number(r.dataset.rem),
+        qty: Number($('.ns-qty', r).value || 0)
+      };
+    }).filter(function(a){ return a.qty > 0; });
+
+    if(allocations.length===0){ showToast('Enter a quantity for at least one batch', true); return; }
+    for(let i=0;i<allocations.length;i++){
+      if(allocations[i].qty > allocations[i].rem){
+        showToast('Quantity exceeds remaining stock for one of the batches', true);
+        return;
+      }
+    }
+
+    const orderRef = 'ORD-' + Date.now().toString(36).toUpperCase();
+    const soldTo = $('#nsSoldTo').value.trim() || null;
+    const channel = $('#nsChannel').value;
+    const saleDate = $('#nsDate').value || todayISO();
+    const notes = $('#nsNotes').value.trim() || null;
+
+    try{
+      const rowsToInsert = allocations.map(function(a){
+        return { batch_id:a.batchId, quantity:a.qty, sold_to:soldTo, channel:channel, order_reference:orderRef, sale_date:saleDate, notes:notes };
+      });
+      const { error } = await sb.from('batch_sales').insert(rowsToInsert);
+      if(error) throw error;
+      showToast('Sale logged across ' + allocations.length + ' batch' + (allocations.length>1?'es':'') + '.');
+      await loadAll();
+      resetNewSaleForm();
+      $('#nsProduct').value = '';
+    }catch(err){
+      showToast('Could not log sale: ' + err.message, true);
+    }
+  });
+
+  // ====================================================================
+  // BATCH DETAIL (this is what the QR code on a label opens)
+  // ====================================================================
+  function openBatchDetail(code){
+    showView('batchDetail');
+    const batch = findBatchByCode(code);
+    const content = $('#batchDetailContent');
+
+    if(!batch){
+      content.innerHTML = '<p class="empty-note">No batch found with code <strong>'+escapeHtml(code)+'</strong>. It may have been archived, or the code mistyped.</p>';
+      return;
+    }
+
+    const product = state.products.find(function(p){ return p.id===batch.product_id; }) ||
+      { name:'Unknown product', category:'other', default_unit:'units' };
+    const rem = remainingForBatch(batch.id);
+    const salesForBatch = state.sales.filter(function(s){ return s.batch_id===batch.id; })
+      .sort(function(a,b){ return b.sale_date.localeCompare(a.sale_date); });
+
+    content.innerHTML =
+      '<div class="detail-head">' +
+        '<span class="cat-pill cat-'+product.category+'">'+categoryLabel(product.category)+'</span>' +
+        '<h2>'+escapeHtml(product.name)+'</h2>' +
+        '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+'</p>' +
+      '</div>' +
+      '<div class="detail-grid">' +
+        '<div><span class="label">Made</span><span>'+fmtDate(batch.batch_date)+'</span></div>' +
+        '<div><span class="label">Best before</span><span>'+fmtDate(batch.best_before_date)+'</span></div>' +
+        '<div><span class="label">Produced</span><span>'+batch.quantity_produced+' '+escapeHtml(batch.unit)+'</span></div>' +
+        '<div><span class="label">Remaining</span><span class="'+(rem<=0?'text-out':'')+'">'+rem+' '+escapeHtml(batch.unit)+'</span></div>' +
+      '</div>' +
+      (batch.recipe_notes ? '<div class="detail-notes"><span class="label">Recipe notes</span><p>'+escapeHtml(batch.recipe_notes)+'</p></div>' : '') +
+      (batch.process_notes ? '<div class="detail-notes"><span class="label">Process notes</span><p>'+escapeHtml(batch.process_notes)+'</p></div>' : '') +
+      '<h3>Sales &amp; allocations</h3>' +
+      '<table class="data-table"><thead><tr><th>Date</th><th>Qty</th><th>Sold to</th><th>Channel</th><th>Order ref</th></tr></thead><tbody>' +
+        (salesForBatch.map(function(s){
+          return '<tr><td>'+fmtDate(s.sale_date)+'</td><td>'+s.quantity+'</td><td>'+escapeHtml(s.sold_to||'—')+'</td><td>'+escapeHtml(s.channel||'—')+'</td><td class="mono">'+escapeHtml(s.order_reference||'—')+'</td></tr>';
+        }).join('') || '<tr><td colspan="5" class="empty-note">No sales logged yet.</td></tr>') +
+      '</tbody></table>' +
+      '<h3>Log a quick sale from this batch</h3>' +
+      '<form id="quickSaleForm" class="inline-form">' +
+        '<label>Qty<input type="number" id="qsQty" min="0.01" step="0.01" max="'+(rem>0?rem:0)+'" required '+(rem<=0?'disabled':'')+'></label>' +
+        '<label>Sold to<input type="text" id="qsSoldTo" placeholder="e.g. Beechworth Farmers Market"></label>' +
+        '<label>Channel<select id="qsChannel">' +
+          '<option value="farmers_market">Farmers market</option>' +
+          '<option value="wholesale">Wholesale</option>' +
+          '<option value="online">Online</option>' +
+          '<option value="other">Other</option>' +
+        '</select></label>' +
+        '<label>Date<input type="date" id="qsDate" value="'+todayISO()+'"></label>' +
+        '<button type="submit" class="btn btn-primary" '+(rem<=0?'disabled':'')+'>Log sale</button>' +
+      '</form>' +
+      '<h3>Label</h3>' +
+      '<div class="label-section">' +
+        '<label>Label size<select id="labelPreset">' +
+          '<option value="50x30">50 × 30 mm</option>' +
+          '<option value="40x30">40 × 30 mm</option>' +
+          '<option value="30x20">30 × 20 mm</option>' +
+        '</select></label>' +
+        '<div class="label-preview-wrap"><canvas id="labelCanvas" class="label-canvas"></canvas></div>' +
+        '<button id="downloadLabelBtn" class="btn btn-secondary">Download label image</button>' +
+        '<p class="help-text">Save this image, then open the NIIMBOT app on your phone, choose Custom / Gallery import, and print it on your label roll.</p>' +
+      '</div>';
+
+    $('#quickSaleForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const qty = Number($('#qsQty').value);
+      if(qty<=0 || qty>rem){ showToast('Quantity must be between 0 and ' + rem, true); return; }
+      try{
+        const { error } = await sb.from('batch_sales').insert({
+          batch_id: batch.id,
+          quantity: qty,
+          sold_to: $('#qsSoldTo').value.trim() || null,
+          channel: $('#qsChannel').value,
+          sale_date: $('#qsDate').value || todayISO()
+        });
+        if(error) throw error;
+        showToast('Sale logged.');
+        await loadAll();
+        openBatchDetail(code);
+      }catch(err){
+        showToast('Could not log sale: ' + err.message, true);
+      }
+    });
+
+    const presetSelect = $('#labelPreset');
+    presetSelect.addEventListener('change', function(){ renderLabel($('#labelCanvas'), batch, product, presetSelect.value); });
+    $('#downloadLabelBtn').addEventListener('click', function(){ downloadLabel($('#labelCanvas'), batch, product, presetSelect.value); });
+    renderLabel($('#labelCanvas'), batch, product, presetSelect.value);
+  }
+
+  // ====================================================================
+  // LABEL RENDERING (canvas) — used by both New Batch and Batch Detail
+  // ====================================================================
+  async function renderLabel(canvas, batch, product, presetKey){
+    const preset = LABEL_PRESETS[presetKey] || LABEL_PRESETS['50x30'];
+    const w = preset.w * PX_PER_MM;
+    const h = preset.h * PX_PER_MM;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    if(document.fonts && document.fonts.ready){
+      try{ await document.fonts.ready; }catch(e){}
+    }
+
+    ctx.fillStyle = '#FBFBF4';
+    ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle = '#1F2A1B';
+    ctx.lineWidth = Math.max(2, h*0.01);
+    ctx.strokeRect(3,3,w-6,h-6);
+
+    const pad = Math.round(h*0.08);
+    const qrSize = Math.round(h*0.62); // big enough to scan reliably without eating all the text space
+    const textMaxWidth = w - qrSize - pad*3;
+
+    // ---- bottom block: batch code, then date line(s), stacked upward from the baseline ----
+    const dateLines = ['Made ' + fmtDate(batch.batch_date)];
+    if(batch.best_before_date){ dateLines.push('BB ' + fmtDate(batch.best_before_date)); }
+    const dateLineH = h*0.10;
+    const codeLineH = h*0.15;
+
+    let cursorY = h - pad; // baseline of the lowest line
+    ctx.font = Math.round(h*0.075) + "px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = '#5B6754';
+    for(let i = dateLines.length - 1; i >= 0; i--){
+      ctx.fillText(dateLines[i], pad, cursorY, textMaxWidth);
+      cursorY -= dateLineH;
+    }
+    cursorY -= (codeLineH - dateLineH);
+    ctx.font = "600 " + Math.round(h*0.115) + "px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = '#1F2A1B';
+    ctx.fillText(batch.batch_code, pad, cursorY, textMaxWidth);
+
+    // ---- top block: brand + product name ----
+    ctx.fillStyle = '#5B6754';
+    ctx.font = Math.round(h*0.085) + "px 'IBM Plex Sans', sans-serif";
+    ctx.fillText('EDIBLE ALCHEMY', pad, pad + h*0.06);
+
+    ctx.fillStyle = '#1F2A1B';
+    ctx.font = "650 " + Math.round(h*0.17) + "px 'Fraunces', serif";
+    wrapText(ctx, product.name, pad, pad + h*0.26, textMaxWidth, h*0.18);
+
+    // ---- QR code, top right ----
+    const qrCanvas = document.createElement('canvas');
+    const url = location.origin + location.pathname + '#/batch/' + encodeURIComponent(batch.batch_code);
+    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#1F2A1B', light:'#FBFBF4' } });
+    ctx.drawImage(qrCanvas, w - qrSize - pad, pad, qrSize, qrSize);
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = String(text||'').split(' ');
+    let line = '';
+    let curY = y;
+    for(let i=0;i<words.length;i++){
+      const test = line + words[i] + ' ';
+      if(ctx.measureText(test).width > maxWidth && line){
+        ctx.fillText(line, x, curY);
+        line = words[i] + ' ';
+        curY += lineHeight;
+      } else {
+        line = test;
+      }
+    }
+    ctx.fillText(line, x, curY);
+  }
+
+  function downloadLabel(canvas, batch, product, presetKey){
+    renderLabel(canvas, batch, product, presetKey).then(function(){
+      canvas.toBlob(function(blob){
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = batch.batch_code + '_label.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    });
+  }
+
+  // ====================================================================
+  // GO
+  // ====================================================================
+  initAuth();
+
+})();
+</script>
+</body>
+</html>
