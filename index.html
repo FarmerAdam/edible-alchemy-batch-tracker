@@ -8,22 +8,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EDEFE3;
-    --surface:#FBFBF4;
-    --ink:#1F2A1B;
-    --ink-soft:#5B6754;
-    --line:#D6D6C2;
-    --amber:#A8642C;
-    --amber-dark:#7E4A1F;
-    --ferment:#5F7438;
-    --ferment-bg:#E3E8D6;
-    --hotsauce:#C1432A;
-    --hotsauce-bg:#F3DCD3;
-    --other:#5B6754;
-    --other-bg:#E4E4D8;
-    --danger:#B43B2F;
+    --bg:#F3ECDA;
+    --surface:#FBF7ED;
+    --ink:#2B2118;
+    --ink-soft:#6B5E4F;
+    --line:#DCD0B4;
+    --kraft:#A8763E;
+    --kraft-dark:#7E591F;
+    --seed:#4F6B3F;
+    --seed-dark:#3A5230;
+    --danger:#B5402A;
     --radius:10px;
-    --shadow:0 1px 2px rgba(31,42,27,0.08), 0 4px 10px rgba(31,42,27,0.06);
+    --shadow:0 1px 2px rgba(43,33,24,0.08), 0 4px 10px rgba(43,33,24,0.06);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -42,6 +38,8 @@
   .mono{font-family:'IBM Plex Mono', monospace;}
   button{font-family:inherit;}
 
+  .brand-mark-svg{color:var(--ink); display:block;}
+
   /* ---------- buttons / forms ---------- */
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:.4em;
@@ -49,12 +47,13 @@
     cursor:pointer; transition:transform .08s ease, opacity .15s ease;
   }
   .btn:active{transform:translateY(1px);}
-  .btn-primary{background:var(--amber); color:#fff;}
-  .btn-primary:hover{background:var(--amber-dark);}
+  .btn-primary{background:var(--seed); color:#fff;}
+  .btn-primary:hover{background:var(--seed-dark);}
   .btn-secondary{background:var(--surface); color:var(--ink); border:1px solid var(--line);}
   .btn-secondary:hover{border-color:var(--ink-soft);}
   .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid transparent;}
   .btn-ghost:hover{border-color:var(--line);}
+  .btn-small{padding:.4em .8em; font-size:.82rem;}
   .btn-block{width:100%;}
   .btn[disabled]{opacity:.5; cursor:not-allowed;}
 
@@ -64,7 +63,7 @@
     border:1px solid var(--line); border-radius:7px; background:var(--surface);
     font-family:inherit; font-size:1rem; color:var(--ink);
   }
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--amber); outline-offset:1px; border-color:var(--amber);}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--kraft); outline-offset:1px; border-color:var(--kraft);}
   textarea{min-height:5em; resize:vertical;}
   form .form-row{display:flex; gap:1em; flex-wrap:wrap;}
   form .form-row > label{flex:1; min-width:160px;}
@@ -73,14 +72,12 @@
   .empty-note{color:var(--ink-soft); font-style:italic; padding:.6em 0;}
 
   /* ---------- login ---------- */
-  .login-screen{
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5em;
-  }
+  .login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5em;}
   .login-card{
     background:var(--surface); border:1px solid var(--line); border-radius:14px;
     box-shadow:var(--shadow); padding:2.2em 2em; width:100%; max-width:380px; text-align:center;
   }
-  .brand-mark{font-size:2.4rem; line-height:1; margin-bottom:.2em;}
+  .login-card .brand-mark-svg{margin:0 auto .3em;}
   .brand-title{font-size:1.7rem; margin-bottom:0;}
   .brand-sub{color:var(--ink-soft); letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; margin:0 0 1.6em;}
   .login-card form{text-align:left;}
@@ -93,7 +90,6 @@
     position:sticky; top:0; z-index:10;
   }
   .brand{display:flex; align-items:center; gap:.6em;}
-  .brand .brand-mark{font-size:1.5rem; margin:0;}
   .brand-title-sm{font-family:'Fraunces', serif; font-weight:650; font-size:1.05rem; line-height:1.1;}
   .brand-eyebrow{font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);}
   .tabs{display:flex; gap:.3em; flex-wrap:wrap; margin-left:auto;}
@@ -103,41 +99,45 @@
   }
   .tab-btn:hover{border-color:var(--line);}
   .tab-btn.active{background:var(--bg); color:var(--ink); border-color:var(--line); font-weight:600;}
-  main{flex:1; padding:1.6em 1.4em 3em; max-width:920px; width:100%; margin:0 auto;}
-  .view section{margin:0;}
+  main{flex:1; padding:1.6em 1.4em 3em; max-width:960px; width:100%; margin:0 auto;}
 
-  /* ---------- category pills ---------- */
+  /* ---------- pills / chips ---------- */
   .cat-pill{
     display:inline-block; font-size:.72rem; font-weight:600; letter-spacing:.03em;
     padding:.25em .65em; border-radius:99px; text-transform:uppercase;
   }
-  .cat-pill.cat-ferment{background:var(--ferment-bg); color:var(--ferment);}
-  .cat-pill.cat-hot_sauce{background:var(--hotsauce-bg); color:var(--hotsauce);}
-  .cat-pill.cat-other{background:var(--other-bg); color:var(--other);}
-
   .pill{font-size:.72rem; font-weight:600; padding:.2em .6em; border-radius:99px;}
-  .pill-active{background:#E3E8D6; color:var(--ferment);}
+  .pill-active{background:#E1E8D8; color:var(--seed-dark);}
   .pill-low{background:#F5E7CB; color:#8A6512;}
-  .pill-out{background:#F3DCD3; color:var(--hotsauce);}
+  .pill-out{background:#F4DCD2; color:var(--danger);}
+  .size-chip{
+    display:inline-block; font-size:.76rem; padding:.2em .6em; border-radius:99px;
+    background:var(--bg); border:1px solid var(--line); color:var(--ink-soft); margin:.15em .25em .15em 0;
+  }
 
-  /* ---------- dashboard ---------- */
-  #dashboardProducts{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1.1em; margin-top:1em;}
+  /* ---------- category groups ---------- */
+  .category-group{margin-bottom:1.8em;}
+  .category-heading{display:flex; align-items:center; gap:.6em; margin-bottom:.7em;}
+  .category-heading h3{margin:0;}
+  #dashboardCategories .product-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1.1em;}
+
   .product-card{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
     padding:1.1em 1.2em; box-shadow:var(--shadow);
   }
-  .product-card-head{display:flex; align-items:center; gap:.6em; margin-bottom:.3em;}
-  .product-card-head h3{margin:0; font-size:1.05rem;}
-  .product-stock{font-family:'IBM Plex Mono', monospace; font-size:1.6rem; font-weight:600; margin:.3em 0 .7em;}
-  .product-stock span{font-family:'IBM Plex Sans', sans-serif; font-size:.7rem; font-weight:500; color:var(--ink-soft); text-transform:uppercase; margin-left:.4em;}
-  .batch-list{display:flex; flex-direction:column; gap:.4em;}
+  .product-card h3{margin:0 0 .5em; font-size:1.05rem;}
+  .size-stock-list{display:flex; flex-direction:column; gap:.3em; margin-bottom:.8em;}
+  .size-stock-row{display:flex; align-items:baseline; gap:.5em; font-size:.92rem;}
+  .size-stock-row .size-label{color:var(--ink-soft); flex:1;}
+  .size-stock-row .size-qty{font-family:'IBM Plex Mono', monospace; font-weight:600;}
+  .batch-list{display:flex; flex-direction:column; gap:.4em; border-top:1px solid var(--line); padding-top:.6em;}
   .batch-row{
     display:flex; align-items:center; gap:.6em; background:var(--bg); border:1px solid transparent;
-    border-radius:7px; padding:.45em .6em; cursor:pointer; text-align:left; width:100%;
+    border-radius:7px; padding:.45em .6em; cursor:pointer; text-align:left; width:100%; flex-wrap:wrap;
   }
   .batch-row:hover{border-color:var(--line);}
-  .batch-row .batch-code{font-family:'IBM Plex Mono', monospace; font-size:.82rem; font-weight:600;}
-  .batch-row .batch-rem{margin-left:auto; font-size:.8rem; color:var(--ink-soft);}
+  .batch-row .batch-code{font-family:'IBM Plex Mono', monospace; font-size:.8rem; font-weight:600;}
+  .batch-row .batch-breakdown{margin-left:auto; font-size:.76rem; color:var(--ink-soft);}
 
   /* ---------- tables ---------- */
   .data-table{width:100%; border-collapse:collapse; margin-top:.6em; font-size:.92rem;}
@@ -147,15 +147,21 @@
   /* ---------- batch detail ---------- */
   .detail-head{margin-bottom:.8em;}
   .batch-code-lg{font-family:'IBM Plex Mono', monospace; font-size:1.05rem; color:var(--ink-soft); margin:.2em 0 0;}
-  .detail-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1em; margin:1em 0;}
-  .detail-grid > div{display:flex; flex-direction:column; gap:.2em;}
-  .detail-grid .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
-  .detail-grid span:last-child{font-size:1.1rem; font-weight:600; font-family:'IBM Plex Mono', monospace;}
-  .text-out{color:var(--hotsauce) !important;}
+  .text-out{color:var(--danger) !important;}
   .detail-notes{margin:1em 0;}
   .detail-notes .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); display:block; margin-bottom:.2em;}
   .inline-form{display:flex; gap:1em; flex-wrap:wrap; align-items:flex-end; margin-top:.6em;}
   .inline-form label{flex:1; min-width:140px; margin-bottom:0;}
+
+  /* ---------- size rows (forms) ---------- */
+  .size-rows{display:flex; flex-direction:column; gap:.5em; margin:.6em 0;}
+  .size-row{display:flex; align-items:center; gap:.7em; padding:.4em .2em; border-bottom:1px solid var(--line);}
+  .size-row .size-row-label{font-size:.92rem; min-width:120px; flex:1;}
+  .size-row .size-row-qty{width:100px; margin:0;}
+
+  .size-editor-row{display:flex; align-items:center; gap:.6em; margin-bottom:.5em;}
+  .size-editor-row input{margin:0;}
+  .size-editor-row .remove-size-btn{flex-shrink:0; background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--danger); width:32px; height:32px; cursor:pointer; font-size:1.1rem; line-height:1;}
 
   /* ---------- label ticket ---------- */
   .label-section{margin-top:.6em;}
@@ -170,15 +176,12 @@
   }
   .label-preview-wrap::before{left:8px;}
   .label-preview-wrap::after{right:8px;}
-  #labelCanvas,.label-canvas{max-width:100%; height:auto; display:block; border-radius:3px;}
+  .label-canvas{max-width:100%; height:auto; display:block; border-radius:3px;}
 
-  /* ---------- new sale rows ---------- */
-  .ns-row{
-    display:flex; align-items:center; gap:.8em; padding:.5em .2em; border-bottom:1px solid var(--line);
-  }
-  .ns-row .batch-code{font-family:'IBM Plex Mono', monospace; font-size:.88rem; min-width:150px;}
-  .ns-row .ns-rem{color:var(--ink-soft); font-size:.85rem; min-width:80px;}
-  .ns-row .ns-qty{width:90px; margin:0;}
+  /* ---------- categories manager ---------- */
+  .category-chips{display:flex; flex-wrap:wrap; gap:.4em; margin:.6em 0 1.2em;}
+  .add-category-row{display:flex; gap:.6em; align-items:flex-end; max-width:420px;}
+  .add-category-row label{flex:1; margin-bottom:0;}
 
   /* ---------- toast ---------- */
   .toast{
@@ -192,7 +195,6 @@
     .app-header{padding:.8em 1em;}
     .tabs{order:3; width:100%; margin-left:0; justify-content:space-between;}
     main{padding:1.2em 1em 3em;}
-    .detail-grid{grid-template-columns:repeat(2,1fr);}
   }
 </style>
 </head>
@@ -203,7 +205,13 @@
 <!-- ============== LOGIN ============== -->
 <div id="loginView" class="login-screen">
   <div class="login-card">
-    <div class="brand-mark">⚗</div>
+    <svg class="brand-mark-svg" viewBox="0 0 48 56" width="38" height="44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 4 H29 V18 L40 46 C41.5 50 38 53 33 53 H15 C10 53 6.5 50 8 46 L19 18 Z"/>
+      <path d="M12.5 39 H35.5"/>
+      <path d="M24 39 V27"/>
+      <path d="M24 31 C19 31 17 27 18 23 C22 23 24 27 24 31 Z"/>
+      <path d="M24 27 C29 27 31 23 30 19 C26 19 24 23 24 27 Z"/>
+    </svg>
     <h1 class="brand-title">Edible Alchemy</h1>
     <p class="brand-sub">Batch Tracker</p>
     <form id="loginForm">
@@ -223,7 +231,13 @@
 <div id="appView" class="app hidden">
   <header class="app-header">
     <div class="brand">
-      <span class="brand-mark">⚗</span>
+      <svg class="brand-mark-svg" viewBox="0 0 48 56" width="24" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 4 H29 V18 L40 46 C41.5 50 38 53 33 53 H15 C10 53 6.5 50 8 46 L19 18 Z"/>
+        <path d="M12.5 39 H35.5"/>
+        <path d="M24 39 V27"/>
+        <path d="M24 31 C19 31 17 27 18 23 C22 23 24 27 24 31 Z"/>
+        <path d="M24 27 C29 27 31 23 30 19 C26 19 24 23 24 27 Z"/>
+      </svg>
       <div>
         <div class="brand-title-sm">Edible Alchemy</div>
         <div class="brand-eyebrow">Batch Tracker</div>
@@ -244,7 +258,7 @@
     <section id="view-dashboard" class="view">
       <h2>Dashboard</h2>
       <p class="help-text">Tap any batch to view its details, log sales against it, or print its label.</p>
-      <div id="dashboardProducts"></div>
+      <div id="dashboardCategories"></div>
     </section>
 
     <!-- NEW BATCH -->
@@ -259,13 +273,13 @@
             <input type="date" id="nbDate" required>
           </label>
         </div>
+
+        <label>Sizes produced this batch — enter a quantity for each size made (leave others blank)</label>
+        <div id="nbSizeRows" class="size-rows">
+          <p class="empty-note">Choose a product to see its sizes.</p>
+        </div>
+
         <div class="form-row">
-          <label>Quantity produced
-            <input type="number" id="nbQty" min="0.01" step="0.01" required>
-          </label>
-          <label>Unit
-            <input type="text" id="nbUnit" placeholder="bottles / jars">
-          </label>
           <label>Best before (optional — auto-filled if left blank)
             <input type="date" id="nbBestBefore">
           </label>
@@ -283,13 +297,18 @@
         <h3>Batch created: <span id="newBatchResultCode" class="mono"></span></h3>
         <p><a href="#" id="newBatchResultLink">Open this batch →</a></p>
         <div class="label-section">
-          <label>Label size
-            <select id="newBatchLabelPreset">
-              <option value="50x30">50 × 30 mm</option>
-              <option value="40x30">40 × 30 mm</option>
-              <option value="30x20">30 × 20 mm</option>
-            </select>
-          </label>
+          <div class="form-row">
+            <label>Label for size
+              <select id="newBatchLabelSize"></select>
+            </label>
+            <label>Label dimensions
+              <select id="newBatchLabelPreset">
+                <option value="50x30">50 × 30 mm</option>
+                <option value="40x30">40 × 30 mm</option>
+                <option value="30x20">30 × 20 mm</option>
+              </select>
+            </label>
+          </div>
           <div class="label-preview-wrap">
             <canvas id="newBatchLabelCanvas" class="label-canvas"></canvas>
           </div>
@@ -302,13 +321,18 @@
     <!-- NEW SALE (split across batches) -->
     <section id="view-newSale" class="view hidden">
       <h2>Log a sale</h2>
-      <p class="help-text">If one order is made up from more than one batch, enter the quantity to take from each — e.g. 15 from one batch and 4 from another.</p>
+      <p class="help-text">Pick the product and size, then enter how many to take from each batch — e.g. 15 from one batch and 4 from another.</p>
       <form id="newSaleForm">
-        <label>Product
-          <select id="nsProduct" required></select>
-        </label>
+        <div class="form-row">
+          <label>Product
+            <select id="nsProduct" required></select>
+          </label>
+          <label>Size
+            <select id="nsSize" required></select>
+          </label>
+        </div>
         <div id="nsBatchRows">
-          <p class="empty-note">Choose a product to see available batches.</p>
+          <p class="empty-note">Choose a product and size to see available batches.</p>
         </div>
         <div class="form-row" style="margin-top:1em;">
           <label>Sold to
@@ -341,38 +365,42 @@
 
     <!-- PRODUCTS -->
     <section id="view-products" class="view hidden">
-      <h2>Products</h2>
-      <table class="data-table">
-        <thead><tr><th>Name</th><th>Code</th><th>Category</th><th>Unit</th><th>Shelf life (days)</th></tr></thead>
-        <tbody id="productsTableBody"></tbody>
-      </table>
+      <h2>Categories</h2>
+      <div id="categoryChips" class="category-chips"></div>
+      <form id="addCategoryForm" class="add-category-row">
+        <label>New category
+          <input type="text" id="catName" placeholder="e.g. Pickles" required>
+        </label>
+        <button type="submit" class="btn btn-secondary">Add category</button>
+      </form>
+
+      <h2 style="margin-top:2em;">Products</h2>
+      <div id="productsList"></div>
 
       <h3>Add a product</h3>
       <form id="addProductForm">
         <div class="form-row">
           <label>Name
-            <input type="text" id="pName" required placeholder="e.g. Habanero Hot Sauce">
+            <input type="text" id="pName" required placeholder="e.g. Classic Kimchi">
           </label>
           <label>Code (used in batch numbers)
-            <input type="text" id="pCode" required maxlength="6" placeholder="e.g. HAB" style="text-transform:uppercase;">
+            <input type="text" id="pCode" required maxlength="6" placeholder="e.g. KIM" style="text-transform:uppercase;">
           </label>
         </div>
         <div class="form-row">
           <label>Category
-            <select id="pCategory">
-              <option value="ferment">Ferment</option>
-              <option value="hot_sauce">Hot sauce</option>
-              <option value="other">Other</option>
-            </select>
-          </label>
-          <label>Default unit
-            <input type="text" id="pUnit" placeholder="bottles / jars" value="bottles">
+            <select id="pCategory" required></select>
           </label>
           <label>Default shelf life (days)
             <input type="number" id="pShelfLife" min="1">
           </label>
         </div>
-        <button type="submit" class="btn btn-primary">Add product</button>
+        <label>Sizes this product comes in</label>
+        <div id="pSizeEditor"></div>
+        <button type="button" id="pAddSizeBtn" class="btn btn-secondary btn-small">+ Add size</button>
+        <div style="margin-top:1.4em;">
+          <button type="submit" class="btn btn-primary">Add product</button>
+        </div>
       </form>
     </section>
 
@@ -385,23 +413,50 @@
 (function(){
 
   // ====================================================================
-  // CONFIG — fill these in from your Supabase project (Settings → API)
+  // CONFIG
   // ====================================================================
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
-  const PX_PER_MM = 8; // canvas resolution for printed labels (~203dpi)
+  const PX_PER_MM = 8;
   const LABEL_PRESETS = { "50x30":{w:50,h:30}, "40x30":{w:40,h:30}, "30x20":{w:30,h:20} };
+
+  const DEFAULT_SIZES_BY_CATEGORY = {
+    'Live ferments': ['480g jar','2kg jar','22kg bucket','Brine (1L)'],
+    'Packaged hot sauce': ['100ml','200ml','750ml','5L'],
+    'Syrups and candy': ['200ml','750ml','5L','90g'],
+    'Salts': ['90g','300g','1.6kg'],
+    'Other / side quests': []
+  };
+
+  const CATEGORY_COLORS = {
+    'Live ferments':        { fg:'#4F6B3F', bg:'#E1E8D8' },
+    'Packaged hot sauce':   { fg:'#B5402A', bg:'#F4DCD2' },
+    'Syrups and candy':     { fg:'#A6790E', bg:'#F6E8C4' },
+    'Salts':                { fg:'#52606E', bg:'#DEE4E8' },
+    'Other / side quests':  { fg:'#5B5247', bg:'#E6E1D6' }
+  };
+  const FALLBACK_PALETTE = [
+    { fg:'#4F6B3F', bg:'#E1E8D8' }, { fg:'#B5402A', bg:'#F4DCD2' }, { fg:'#A6790E', bg:'#F6E8C4' },
+    { fg:'#52606E', bg:'#DEE4E8' }, { fg:'#7A4F6B', bg:'#EBDCE6' }, { fg:'#3F5B6B', bg:'#D9E3E8' }
+  ];
+  function colorForCategory(name){
+    if(CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
+    let hash = 0;
+    for(let i=0;i<String(name||'').length;i++){ hash = (hash*31 + name.charCodeAt(i)) >>> 0; }
+    return FALLBACK_PALETTE[hash % FALLBACK_PALETTE.length];
+  }
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const state = { products:[], batches:[], sales:[] };
+  const state = { categories:[], products:[], productSizes:[], batches:[], sizeQuantities:[], sales:[] };
+  let nbSizeRowState = []; // [{sizeId, label}] for the New Batch form
+  let pSizeRowState = [];  // [string,...] for the Add Product form
 
   // ====================================================================
   // small helpers
   // ====================================================================
   function $(sel, root){ return (root||document).querySelector(sel); }
   function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-
   function escapeHtml(str){
     return String(str==null?'':str).replace(/[&<>"']/g, function(m){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
@@ -416,9 +471,6 @@
   function pad2(n){ return String(n).padStart(2,'0'); }
   function ddmmyy(dateObj){
     return pad2(dateObj.getDate()) + pad2(dateObj.getMonth()+1) + String(dateObj.getFullYear()).slice(-2);
-  }
-  function categoryLabel(cat){
-    return cat==='ferment' ? 'Ferment' : cat==='hot_sauce' ? 'Hot sauce' : 'Other';
   }
 
   let toastTimer;
@@ -451,7 +503,6 @@
     await loadAll();
     routeFromHash();
   }
-
   $('#loginForm').addEventListener('submit', async function(e){
     e.preventDefault();
     const email = $('#loginEmail').value.trim();
@@ -463,7 +514,6 @@
       $('#loginError').classList.remove('hidden');
     }
   });
-
   $('#signOutBtn').addEventListener('click', async function(){
     await sb.auth.signOut();
     location.hash = '';
@@ -474,34 +524,70 @@
   // ====================================================================
   async function loadAll(){
     try{
-      const [pRes, bRes, sRes] = await Promise.all([
+      const [cRes, pRes, psRes, bRes, sqRes, sRes] = await Promise.all([
+        sb.from('categories').select('*').order('sort_order'),
         sb.from('products').select('*').eq('active', true).order('name'),
+        sb.from('product_sizes').select('*').eq('active', true).order('sort_order'),
         sb.from('batches').select('*').eq('archived', false).order('batch_date', { ascending:false }),
+        sb.from('batch_size_quantities').select('*'),
         sb.from('batch_sales').select('*')
       ]);
-      if(pRes.error) throw pRes.error;
-      if(bRes.error) throw bRes.error;
-      if(sRes.error) throw sRes.error;
+      [cRes,pRes,psRes,bRes,sqRes,sRes].forEach(function(r){ if(r.error) throw r.error; });
+      state.categories = cRes.data || [];
       state.products = pRes.data || [];
+      state.productSizes = psRes.data || [];
       state.batches = bRes.data || [];
+      state.sizeQuantities = sqRes.data || [];
       state.sales = sRes.data || [];
+
       populateProductSelects();
       renderDashboard();
-      renderProductsView();
+      renderCategoryChips();
+      renderProductsList();
     }catch(err){
       showToast('Could not load data: ' + err.message, true);
     }
   }
 
-  function remainingForBatch(batchId){
-    const batch = state.batches.find(function(b){ return b.id===batchId; });
-    const produced = batch ? Number(batch.quantity_produced) : 0;
-    const sold = state.sales
-      .filter(function(s){ return s.batch_id===batchId; })
-      .reduce(function(sum,s){ return sum + Number(s.quantity); }, 0);
-    return produced - sold;
+  function categoryName(categoryId){
+    const c = state.categories.find(function(c){ return c.id===categoryId; });
+    return c ? c.name : 'Uncategorised';
   }
-
+  function sizesForProduct(productId){
+    return state.productSizes.filter(function(s){ return s.product_id===productId; })
+      .sort(function(a,b){ return a.sort_order-b.sort_order; });
+  }
+  function producedForBatchSize(batchId, sizeId){
+    const row = state.sizeQuantities.find(function(q){ return q.batch_id===batchId && q.product_size_id===sizeId; });
+    return row ? Number(row.quantity_produced) : 0;
+  }
+  function soldForBatchSize(batchId, sizeId){
+    return state.sales.filter(function(s){ return s.batch_id===batchId && s.product_size_id===sizeId; })
+      .reduce(function(sum,s){ return sum+Number(s.quantity); }, 0);
+  }
+  function remainingForBatchSize(batchId, sizeId){
+    return producedForBatchSize(batchId,sizeId) - soldForBatchSize(batchId,sizeId);
+  }
+  function batchSizeBreakdown(batchId){
+    return state.sizeQuantities.filter(function(q){ return q.batch_id===batchId; }).map(function(q){
+      const size = state.productSizes.find(function(s){ return s.id===q.product_size_id; });
+      const sold = soldForBatchSize(batchId, q.product_size_id);
+      return {
+        sizeId: q.product_size_id,
+        label: size ? size.label : 'Unknown size',
+        sortOrder: size ? size.sort_order : 0,
+        produced: Number(q.quantity_produced),
+        sold: sold,
+        remaining: Number(q.quantity_produced) - sold
+      };
+    }).sort(function(a,b){ return a.sortOrder-b.sortOrder; });
+  }
+  function remainingForProductSize(productId, sizeId){
+    const batchIds = state.batches.filter(function(b){ return b.product_id===productId; }).map(function(b){ return b.id; });
+    let total = 0;
+    batchIds.forEach(function(bid){ total += remainingForBatchSize(bid, sizeId); });
+    return total;
+  }
   function findBatchByCode(code){
     return state.batches.find(function(b){ return b.batch_code===code; });
   }
@@ -510,7 +596,6 @@
   // ROUTING
   // ====================================================================
   window.addEventListener('hashchange', routeFromHash);
-
   function routeFromHash(){
     const hash = location.hash.replace(/^#\/?/, '');
     if(hash.indexOf('batch/')===0){
@@ -521,7 +606,6 @@
       showView('dashboard');
     }
   }
-
   function showView(name){
     $all('.view').forEach(function(v){ v.classList.add('hidden'); });
     $('#view-'+name).classList.remove('hidden');
@@ -529,7 +613,6 @@
     if(name==='newBatch') resetNewBatchForm();
     if(name==='newSale') resetNewSaleForm();
   }
-
   $all('.tab-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ location.hash = '#/' + btn.dataset.view; });
   });
@@ -539,7 +622,7 @@
   // DASHBOARD
   // ====================================================================
   function renderDashboard(){
-    const container = $('#dashboardProducts');
+    const container = $('#dashboardCategories');
     container.innerHTML = '';
 
     if(state.products.length===0){
@@ -547,32 +630,54 @@
       return;
     }
 
-    state.products.forEach(function(product){
-      const batchesForProduct = state.batches.filter(function(b){ return b.product_id===product.id; })
-        .sort(function(a,b){ return b.batch_date.localeCompare(a.batch_date); });
-      const totalRemaining = batchesForProduct.reduce(function(sum,b){ return sum + remainingForBatch(b.id); }, 0);
+    state.categories.forEach(function(cat){
+      const productsInCat = state.products.filter(function(p){ return p.category_id===cat.id; });
+      if(productsInCat.length===0) return;
+      const colors = colorForCategory(cat.name);
 
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML =
-        '<div class="product-card-head">' +
-          '<span class="cat-pill cat-'+product.category+'">'+categoryLabel(product.category)+'</span>' +
+      const group = document.createElement('div');
+      group.className = 'category-group';
+      group.innerHTML =
+        '<div class="category-heading">' +
+          '<span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(cat.name)+'</span>' +
         '</div>' +
-        '<h3>'+escapeHtml(product.name)+'</h3>' +
-        '<div class="product-stock">'+totalRemaining+'<span>'+escapeHtml(product.default_unit||'units')+' in stock</span></div>' +
-        '<div class="batch-list">' +
-          (batchesForProduct.map(function(b){
-            const rem = remainingForBatch(b.id);
-            const pillClass = rem<=0 ? 'pill-out' : (rem<=5 ? 'pill-low' : 'pill-active');
-            const pillText = rem<=0 ? 'Sold out' : (rem<=5 ? 'Low stock' : 'Active');
-            return '<button class="batch-row" data-code="'+escapeHtml(b.batch_code)+'">' +
-              '<span class="batch-code">'+escapeHtml(b.batch_code)+'</span>' +
-              '<span class="batch-rem">'+rem+' left</span>' +
-              '<span class="pill '+pillClass+'">'+pillText+'</span>' +
-            '</button>';
-          }).join('') || '<p class="empty-note">No batches yet.</p>') +
-        '</div>';
-      container.appendChild(card);
+        '<div class="product-grid"></div>';
+      const grid = $('.product-grid', group);
+
+      productsInCat.forEach(function(product){
+        const sizes = sizesForProduct(product.id);
+        const batchesForProduct = state.batches.filter(function(b){ return b.product_id===product.id; })
+          .sort(function(a,b){ return b.batch_date.localeCompare(a.batch_date); });
+
+        const stockRowsHtml = sizes.map(function(size){
+          const rem = remainingForProductSize(product.id, size.id);
+          return '<div class="size-stock-row"><span class="size-label">'+escapeHtml(size.label)+'</span><span class="size-qty">'+rem+'</span></div>';
+        }).join('') || '<p class="empty-note">No sizes defined yet.</p>';
+
+        const batchRowsHtml = batchesForProduct.map(function(b){
+          const breakdown = batchSizeBreakdown(b.id);
+          const totalRemaining = breakdown.reduce(function(s,row){ return s+row.remaining; }, 0);
+          const totalProduced = breakdown.reduce(function(s,row){ return s+row.produced; }, 0);
+          const pillClass = totalRemaining<=0 && totalProduced>0 ? 'pill-out' : (totalRemaining<=5 ? 'pill-low' : 'pill-active');
+          const pillText = totalRemaining<=0 && totalProduced>0 ? 'Sold out' : (totalRemaining<=5 ? 'Low stock' : 'Active');
+          const breakdownText = breakdown.map(function(row){ return row.label+': '+row.remaining; }).join(' · ') || 'No sizes recorded';
+          return '<button class="batch-row" data-code="'+escapeHtml(b.batch_code)+'">' +
+            '<span class="batch-code">'+escapeHtml(b.batch_code)+'</span>' +
+            '<span class="pill '+pillClass+'">'+pillText+'</span>' +
+            '<span class="batch-breakdown">'+escapeHtml(breakdownText)+'</span>' +
+          '</button>';
+        }).join('') || '<p class="empty-note">No batches yet.</p>';
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML =
+          '<h3>'+escapeHtml(product.name)+'</h3>' +
+          '<div class="size-stock-list">'+stockRowsHtml+'</div>' +
+          '<div class="batch-list">'+batchRowsHtml+'</div>';
+        grid.appendChild(card);
+      });
+
+      container.appendChild(group);
     });
 
     $all('.batch-row', container).forEach(function(btn){
@@ -581,43 +686,127 @@
   }
 
   // ====================================================================
-  // PRODUCT SELECTS / PRODUCTS VIEW
+  // PRODUCT SELECTS
   // ====================================================================
   function populateProductSelects(){
     const opts = '<option value="">Select…</option>' + state.products.map(function(p){
-      return '<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>';
+      return '<option value="'+p.id+'">'+escapeHtml(p.name)+' — '+escapeHtml(categoryName(p.category_id))+'</option>';
     }).join('');
     $('#nbProduct').innerHTML = opts;
     $('#nsProduct').innerHTML = opts;
+
+    const catOpts = state.categories.map(function(c){
+      return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>';
+    }).join('');
+    $('#pCategory').innerHTML = catOpts || '<option value="">Add a category first</option>';
   }
 
-  function renderProductsView(){
-    const tbody = $('#productsTableBody');
-    tbody.innerHTML = state.products.map(function(p){
-      return '<tr>' +
-        '<td>'+escapeHtml(p.name)+'</td>' +
-        '<td class="mono">'+escapeHtml(p.code)+'</td>' +
-        '<td><span class="cat-pill cat-'+p.category+'">'+categoryLabel(p.category)+'</span></td>' +
-        '<td>'+escapeHtml(p.default_unit||'—')+'</td>' +
-        '<td>'+(p.default_shelf_life_days==null?'—':p.default_shelf_life_days)+'</td>' +
-      '</tr>';
-    }).join('') || '<tr><td colspan="5" class="empty-note">No products yet.</td></tr>';
+  // ====================================================================
+  // CATEGORIES (Products tab)
+  // ====================================================================
+  function renderCategoryChips(){
+    $('#categoryChips').innerHTML = state.categories.map(function(c){
+      const colors = colorForCategory(c.name);
+      return '<span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(c.name)+'</span>';
+    }).join('') || '<p class="empty-note">No categories yet.</p>';
   }
+  $('#addCategoryForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const name = $('#catName').value.trim();
+    if(!name) return;
+    try{
+      const maxSort = state.categories.reduce(function(m,c){ return Math.max(m, c.sort_order||0); }, 0);
+      const { error } = await sb.from('categories').insert({ name: name, sort_order: maxSort+1 });
+      if(error) throw error;
+      showToast('Category added.');
+      $('#addCategoryForm').reset();
+      await loadAll();
+    }catch(err){ showToast('Could not add category: ' + err.message, true); }
+  });
+
+  // ====================================================================
+  // PRODUCTS LIST + ADD PRODUCT (with size editor)
+  // ====================================================================
+  function renderProductsList(){
+    const container = $('#productsList');
+    if(state.products.length===0){
+      container.innerHTML = '<p class="empty-note">No products yet.</p>';
+      return;
+    }
+    container.innerHTML = state.categories.map(function(cat){
+      const productsInCat = state.products.filter(function(p){ return p.category_id===cat.id; });
+      if(productsInCat.length===0) return '';
+      const colors = colorForCategory(cat.name);
+      const rows = productsInCat.map(function(p){
+        const sizes = sizesForProduct(p.id);
+        const sizeChips = sizes.map(function(s){ return '<span class="size-chip">'+escapeHtml(s.label)+'</span>'; }).join('') || '<span class="empty-note">No sizes yet</span>';
+        return '<div style="margin-bottom:1em;">' +
+          '<div><strong>'+escapeHtml(p.name)+'</strong> <span class="mono" style="color:var(--ink-soft);">'+escapeHtml(p.code)+'</span></div>' +
+          '<div style="margin-top:.3em;">'+sizeChips+'</div>' +
+        '</div>';
+      }).join('');
+      return '<div class="category-group">' +
+        '<div class="category-heading"><span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(cat.name)+'</span></div>' +
+        rows +
+      '</div>';
+    }).join('');
+  }
+
+  function renderPSizeEditor(){
+    $('#pSizeEditor').innerHTML = pSizeRowState.map(function(label, idx){
+      return '<div class="size-editor-row">' +
+        '<input type="text" class="p-size-input" data-idx="'+idx+'" value="'+escapeHtml(label)+'" placeholder="e.g. 480g jar">' +
+        '<button type="button" class="remove-size-btn" data-idx="'+idx+'" title="Remove">×</button>' +
+      '</div>';
+    }).join('');
+    $all('.p-size-input').forEach(function(inp){
+      inp.addEventListener('input', function(){ pSizeRowState[Number(inp.dataset.idx)] = inp.value; });
+    });
+    $all('.remove-size-btn', $('#pSizeEditor')).forEach(function(btn){
+      btn.addEventListener('click', function(){
+        pSizeRowState.splice(Number(btn.dataset.idx), 1);
+        renderPSizeEditor();
+      });
+    });
+  }
+  $('#pAddSizeBtn').addEventListener('click', function(){
+    pSizeRowState.push('');
+    renderPSizeEditor();
+  });
+  $('#pCategory').addEventListener('change', function(){
+    if(pSizeRowState.length===0){
+      const catId = $('#pCategory').value;
+      const cat = state.categories.find(function(c){ return c.id===catId; });
+      const defaults = cat ? (DEFAULT_SIZES_BY_CATEGORY[cat.name] || []) : [];
+      pSizeRowState = defaults.slice();
+      renderPSizeEditor();
+    }
+  });
 
   $('#addProductForm').addEventListener('submit', async function(e){
     e.preventDefault();
+    const labels = pSizeRowState.map(function(l){ return l.trim(); }).filter(Boolean);
     try{
-      const { error } = await sb.from('products').insert({
+      const { data: newProduct, error } = await sb.from('products').insert({
         name: $('#pName').value.trim(),
         code: $('#pCode').value.trim().toUpperCase(),
-        category: $('#pCategory').value,
-        default_unit: $('#pUnit').value.trim() || 'bottles',
+        category_id: $('#pCategory').value,
         default_shelf_life_days: $('#pShelfLife').value ? Number($('#pShelfLife').value) : null
-      });
+      }).select().single();
       if(error) throw error;
+
+      if(labels.length>0){
+        const sizeRows = labels.map(function(label, idx){
+          return { product_id: newProduct.id, label: label, sort_order: idx };
+        });
+        const { error: sizeErr } = await sb.from('product_sizes').insert(sizeRows);
+        if(sizeErr) throw sizeErr;
+      }
+
       showToast('Product added.');
       $('#addProductForm').reset();
-      $('#pUnit').value = 'bottles';
+      pSizeRowState = [];
+      renderPSizeEditor();
       await loadAll();
     }catch(err){
       showToast('Could not add product: ' + err.message, true);
@@ -631,7 +820,28 @@
     $('#newBatchForm').reset();
     $('#newBatchResult').classList.add('hidden');
     $('#nbDate').value = todayISO();
+    $('#nbSizeRows').innerHTML = '<p class="empty-note">Choose a product to see its sizes.</p>';
+    nbSizeRowState = [];
   }
+  $('#nbProduct').addEventListener('change', function(){
+    const productId = $('#nbProduct').value;
+    const container = $('#nbSizeRows');
+    if(!productId){
+      container.innerHTML = '<p class="empty-note">Choose a product to see its sizes.</p>';
+      return;
+    }
+    const sizes = sizesForProduct(productId);
+    if(sizes.length===0){
+      container.innerHTML = '<p class="empty-note">This product has no sizes defined yet — add some in the Products tab first.</p>';
+      return;
+    }
+    container.innerHTML = sizes.map(function(s){
+      return '<div class="size-row" data-size-id="'+s.id+'">' +
+        '<span class="size-row-label">'+escapeHtml(s.label)+'</span>' +
+        '<input type="number" class="size-row-qty" min="0" step="0.01" placeholder="0">' +
+      '</div>';
+    }).join('');
+  });
 
   async function generateBatchCode(productCode, dateObj){
     const datePart = ddmmyy(dateObj);
@@ -648,9 +858,14 @@
     const product = state.products.find(function(p){ return p.id===productId; });
     if(!product){ showToast('Choose a product first', true); return; }
 
-    const qty = Number($('#nbQty').value);
+    const sizeRows = $all('.size-row', $('#nbSizeRows'));
+    const quantities = sizeRows.map(function(row){
+      return { sizeId: row.dataset.sizeId, qty: Number($('.size-row-qty', row).value || 0) };
+    }).filter(function(r){ return r.qty > 0; });
+
+    if(quantities.length===0){ showToast('Enter a quantity for at least one size', true); return; }
+
     const date = $('#nbDate').value || todayISO();
-    const unit = $('#nbUnit').value.trim() || product.default_unit || 'bottles';
     let bestBefore = $('#nbBestBefore').value;
     if(!bestBefore && product.default_shelf_life_days){
       const d = new Date(date+'T00:00:00');
@@ -660,77 +875,102 @@
 
     try{
       const code = await generateBatchCode(product.code, new Date(date+'T00:00:00'));
-      const { data, error } = await sb.from('batches').insert({
+      const { data: newBatch, error } = await sb.from('batches').insert({
         batch_code: code,
         product_id: product.id,
         batch_date: date,
-        quantity_produced: qty,
-        unit: unit,
         best_before_date: bestBefore || null,
         recipe_notes: $('#nbRecipeNotes').value.trim() || null,
         process_notes: $('#nbProcessNotes').value.trim() || null
       }).select().single();
       if(error) throw error;
 
+      const sqRows = quantities.map(function(q){
+        return { batch_id: newBatch.id, product_size_id: q.sizeId, quantity_produced: q.qty };
+      });
+      const { error: sqErr } = await sb.from('batch_size_quantities').insert(sqRows);
+      if(sqErr) throw sqErr;
+
       showToast('Batch ' + code + ' created.');
       await loadAll();
-      const newBatch = findBatchByCode(code);
 
       $('#newBatchResult').classList.remove('hidden');
       $('#newBatchResultCode').textContent = code;
       $('#newBatchResultLink').onclick = function(ev){ ev.preventDefault(); location.hash = '#/batch/' + code; };
 
-      const preset = $('#newBatchLabelPreset');
-      preset.onchange = function(){ renderLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value); };
-      await renderLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value);
-      $('#newBatchDownloadLabelBtn').onclick = function(){ downloadLabel($('#newBatchLabelCanvas'), newBatch, product, preset.value); };
+      const sizeSelect = $('#newBatchLabelSize');
+      sizeSelect.innerHTML = quantities.map(function(q){
+        const size = state.productSizes.find(function(s){ return s.id===q.sizeId; });
+        return '<option value="'+q.sizeId+'">'+escapeHtml(size?size.label:'')+'</option>';
+      }).join('');
+
+      const presetSelect = $('#newBatchLabelPreset');
+      const draw = function(){ renderLabel($('#newBatchLabelCanvas'), newBatch, product, presetSelect.value, sizeSelect.options[sizeSelect.selectedIndex] ? sizeSelect.options[sizeSelect.selectedIndex].text : ''); };
+      presetSelect.onchange = draw;
+      sizeSelect.onchange = draw;
+      await draw();
+      $('#newBatchDownloadLabelBtn').onclick = function(){ downloadLabel($('#newBatchLabelCanvas'), newBatch, presetSelect.value); };
     }catch(err){
       showToast('Could not create batch: ' + err.message, true);
     }
   });
 
   // ====================================================================
-  // LOG A SALE (split across batches)
+  // LOG A SALE (split across batches, size-aware)
   // ====================================================================
   function resetNewSaleForm(){
     $('#newSaleForm').reset();
-    $('#nsBatchRows').innerHTML = '<p class="empty-note">Choose a product to see available batches.</p>';
+    $('#nsSize').innerHTML = '<option value="">Choose a product first</option>';
+    $('#nsBatchRows').innerHTML = '<p class="empty-note">Choose a product and size to see available batches.</p>';
     $('#nsDate').value = todayISO();
   }
-
   $('#nsProduct').addEventListener('change', function(){
     const productId = $('#nsProduct').value;
-    const container = $('#nsBatchRows');
+    const sizeSelect = $('#nsSize');
     if(!productId){
-      container.innerHTML = '<p class="empty-note">Choose a product to see available batches.</p>';
+      sizeSelect.innerHTML = '<option value="">Choose a product first</option>';
+      $('#nsBatchRows').innerHTML = '<p class="empty-note">Choose a product and size to see available batches.</p>';
+      return;
+    }
+    const sizes = sizesForProduct(productId);
+    sizeSelect.innerHTML = '<option value="">Select…</option>' + sizes.map(function(s){
+      return '<option value="'+s.id+'">'+escapeHtml(s.label)+'</option>';
+    }).join('');
+    $('#nsBatchRows').innerHTML = '<p class="empty-note">Choose a size to see available batches.</p>';
+  });
+  $('#nsSize').addEventListener('change', function(){
+    const productId = $('#nsProduct').value;
+    const sizeId = $('#nsSize').value;
+    const container = $('#nsBatchRows');
+    if(!productId || !sizeId){
+      container.innerHTML = '<p class="empty-note">Choose a size to see available batches.</p>';
       return;
     }
     const batchesForProduct = state.batches.filter(function(b){ return b.product_id===productId; })
+      .filter(function(b){ return producedForBatchSize(b.id, sizeId) > 0; })
       .sort(function(a,b){ return a.batch_date.localeCompare(b.batch_date); }); // oldest first
 
     if(batchesForProduct.length===0){
-      container.innerHTML = '<p class="empty-note">No batches for this product yet.</p>';
+      container.innerHTML = '<p class="empty-note">No batches have this size recorded yet.</p>';
       return;
     }
     container.innerHTML = batchesForProduct.map(function(b){
-      const rem = remainingForBatch(b.id);
+      const rem = remainingForBatchSize(b.id, sizeId);
       return '<div class="ns-row" data-batch-id="'+b.id+'" data-rem="'+rem+'">' +
         '<span class="batch-code">'+escapeHtml(b.batch_code)+'</span>' +
-        '<span class="ns-rem">'+rem+' left</span>' +
-        '<input type="number" class="ns-qty" min="0" max="'+rem+'" step="0.01" value="0" '+(rem<=0?'disabled':'')+'>' +
+        '<span class="ns-rem" style="color:var(--ink-soft); font-size:.85rem; min-width:70px;">'+rem+' left</span>' +
+        '<input type="number" class="ns-qty" min="0" max="'+rem+'" step="0.01" value="0" style="width:90px;" '+(rem<=0?'disabled':'')+'>' +
       '</div>';
     }).join('');
   });
 
   $('#newSaleForm').addEventListener('submit', async function(e){
     e.preventDefault();
+    const sizeId = $('#nsSize').value;
+    if(!sizeId){ showToast('Choose a size', true); return; }
     const rows = $all('.ns-row', $('#nsBatchRows'));
     const allocations = rows.map(function(r){
-      return {
-        batchId: r.dataset.batchId,
-        rem: Number(r.dataset.rem),
-        qty: Number($('.ns-qty', r).value || 0)
-      };
+      return { batchId: r.dataset.batchId, rem: Number(r.dataset.rem), qty: Number($('.ns-qty', r).value || 0) };
     }).filter(function(a){ return a.qty > 0; });
 
     if(allocations.length===0){ showToast('Enter a quantity for at least one batch', true); return; }
@@ -749,7 +989,7 @@
 
     try{
       const rowsToInsert = allocations.map(function(a){
-        return { batch_id:a.batchId, quantity:a.qty, sold_to:soldTo, channel:channel, order_reference:orderRef, sale_date:saleDate, notes:notes };
+        return { batch_id:a.batchId, product_size_id:sizeId, quantity:a.qty, sold_to:soldTo, channel:channel, order_reference:orderRef, sale_date:saleDate, notes:notes };
       });
       const { error } = await sb.from('batch_sales').insert(rowsToInsert);
       if(error) throw error;
@@ -775,35 +1015,40 @@
       return;
     }
 
-    const product = state.products.find(function(p){ return p.id===batch.product_id; }) ||
-      { name:'Unknown product', category:'other', default_unit:'units' };
-    const rem = remainingForBatch(batch.id);
+    const product = state.products.find(function(p){ return p.id===batch.product_id; }) || { name:'Unknown product', category_id:null };
+    const colors = colorForCategory(categoryName(product.category_id));
+    const breakdown = batchSizeBreakdown(batch.id);
     const salesForBatch = state.sales.filter(function(s){ return s.batch_id===batch.id; })
       .sort(function(a,b){ return b.sale_date.localeCompare(a.sale_date); });
+    const sizeLookup = {};
+    state.productSizes.forEach(function(s){ sizeLookup[s.id] = s.label; });
 
     content.innerHTML =
       '<div class="detail-head">' +
-        '<span class="cat-pill cat-'+product.category+'">'+categoryLabel(product.category)+'</span>' +
+        '<span class="cat-pill" style="color:'+colors.fg+';background:'+colors.bg+'">'+escapeHtml(categoryName(product.category_id))+'</span>' +
         '<h2>'+escapeHtml(product.name)+'</h2>' +
-        '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+'</p>' +
+        '<p class="batch-code-lg">'+escapeHtml(batch.batch_code)+' &middot; made '+fmtDate(batch.batch_date)+(batch.best_before_date?' &middot; BB '+fmtDate(batch.best_before_date):'')+'</p>' +
       '</div>' +
-      '<div class="detail-grid">' +
-        '<div><span class="label">Made</span><span>'+fmtDate(batch.batch_date)+'</span></div>' +
-        '<div><span class="label">Best before</span><span>'+fmtDate(batch.best_before_date)+'</span></div>' +
-        '<div><span class="label">Produced</span><span>'+batch.quantity_produced+' '+escapeHtml(batch.unit)+'</span></div>' +
-        '<div><span class="label">Remaining</span><span class="'+(rem<=0?'text-out':'')+'">'+rem+' '+escapeHtml(batch.unit)+'</span></div>' +
-      '</div>' +
+      '<h3>Stock by size</h3>' +
+      '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Sold</th><th>Remaining</th></tr></thead><tbody>' +
+        breakdown.map(function(row){
+          return '<tr><td>'+escapeHtml(row.label)+'</td><td>'+row.produced+'</td><td>'+row.sold+'</td><td class="'+(row.remaining<=0?'text-out':'')+'">'+row.remaining+'</td></tr>';
+        }).join('') +
+      '</tbody></table>' +
       (batch.recipe_notes ? '<div class="detail-notes"><span class="label">Recipe notes</span><p>'+escapeHtml(batch.recipe_notes)+'</p></div>' : '') +
       (batch.process_notes ? '<div class="detail-notes"><span class="label">Process notes</span><p>'+escapeHtml(batch.process_notes)+'</p></div>' : '') +
       '<h3>Sales &amp; allocations</h3>' +
-      '<table class="data-table"><thead><tr><th>Date</th><th>Qty</th><th>Sold to</th><th>Channel</th><th>Order ref</th></tr></thead><tbody>' +
+      '<table class="data-table"><thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Sold to</th><th>Channel</th><th>Order ref</th></tr></thead><tbody>' +
         (salesForBatch.map(function(s){
-          return '<tr><td>'+fmtDate(s.sale_date)+'</td><td>'+s.quantity+'</td><td>'+escapeHtml(s.sold_to||'—')+'</td><td>'+escapeHtml(s.channel||'—')+'</td><td class="mono">'+escapeHtml(s.order_reference||'—')+'</td></tr>';
-        }).join('') || '<tr><td colspan="5" class="empty-note">No sales logged yet.</td></tr>') +
+          return '<tr><td>'+fmtDate(s.sale_date)+'</td><td>'+escapeHtml(sizeLookup[s.product_size_id]||'—')+'</td><td>'+s.quantity+'</td><td>'+escapeHtml(s.sold_to||'—')+'</td><td>'+escapeHtml(s.channel||'—')+'</td><td class="mono">'+escapeHtml(s.order_reference||'—')+'</td></tr>';
+        }).join('') || '<tr><td colspan="6" class="empty-note">No sales logged yet.</td></tr>') +
       '</tbody></table>' +
       '<h3>Log a quick sale from this batch</h3>' +
       '<form id="quickSaleForm" class="inline-form">' +
-        '<label>Qty<input type="number" id="qsQty" min="0.01" step="0.01" max="'+(rem>0?rem:0)+'" required '+(rem<=0?'disabled':'')+'></label>' +
+        '<label>Size<select id="qsSize">' +
+          breakdown.filter(function(r){ return r.remaining>0; }).map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('') +
+        '</select></label>' +
+        '<label>Qty<input type="number" id="qsQty" min="0.01" step="0.01" required></label>' +
         '<label>Sold to<input type="text" id="qsSoldTo" placeholder="e.g. Beechworth Farmers Market"></label>' +
         '<label>Channel<select id="qsChannel">' +
           '<option value="farmers_market">Farmers market</option>' +
@@ -812,15 +1057,20 @@
           '<option value="other">Other</option>' +
         '</select></label>' +
         '<label>Date<input type="date" id="qsDate" value="'+todayISO()+'"></label>' +
-        '<button type="submit" class="btn btn-primary" '+(rem<=0?'disabled':'')+'>Log sale</button>' +
+        '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){return r.remaining<=0;})?'disabled':'')+'>Log sale</button>' +
       '</form>' +
       '<h3>Label</h3>' +
       '<div class="label-section">' +
-        '<label>Label size<select id="labelPreset">' +
-          '<option value="50x30">50 × 30 mm</option>' +
-          '<option value="40x30">40 × 30 mm</option>' +
-          '<option value="30x20">30 × 20 mm</option>' +
-        '</select></label>' +
+        '<div class="form-row">' +
+          '<label>Label for size<select id="labelSize">' +
+            breakdown.map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('') +
+          '</select></label>' +
+          '<label>Label dimensions<select id="labelPreset">' +
+            '<option value="50x30">50 × 30 mm</option>' +
+            '<option value="40x30">40 × 30 mm</option>' +
+            '<option value="30x20">30 × 20 mm</option>' +
+          '</select></label>' +
+        '</div>' +
         '<div class="label-preview-wrap"><canvas id="labelCanvas" class="label-canvas"></canvas></div>' +
         '<button id="downloadLabelBtn" class="btn btn-secondary">Download label image</button>' +
         '<p class="help-text">Save this image, then open the NIIMBOT app on your phone, choose Custom / Gallery import, and print it on your label roll.</p>' +
@@ -828,11 +1078,14 @@
 
     $('#quickSaleForm').addEventListener('submit', async function(e){
       e.preventDefault();
+      const sizeId = $('#qsSize').value;
+      const rem = remainingForBatchSize(batch.id, sizeId);
       const qty = Number($('#qsQty').value);
       if(qty<=0 || qty>rem){ showToast('Quantity must be between 0 and ' + rem, true); return; }
       try{
         const { error } = await sb.from('batch_sales').insert({
           batch_id: batch.id,
+          product_size_id: sizeId,
           quantity: qty,
           sold_to: $('#qsSoldTo').value.trim() || null,
           channel: $('#qsChannel').value,
@@ -847,16 +1100,22 @@
       }
     });
 
-    const presetSelect = $('#labelPreset');
-    presetSelect.addEventListener('change', function(){ renderLabel($('#labelCanvas'), batch, product, presetSelect.value); });
-    $('#downloadLabelBtn').addEventListener('click', function(){ downloadLabel($('#labelCanvas'), batch, product, presetSelect.value); });
-    renderLabel($('#labelCanvas'), batch, product, presetSelect.value);
+    const labelSizeSelect = $('#labelSize');
+    const labelPresetSelect = $('#labelPreset');
+    const drawCurrentLabel = function(){
+      const sizeText = labelSizeSelect.options[labelSizeSelect.selectedIndex] ? labelSizeSelect.options[labelSizeSelect.selectedIndex].text : '';
+      renderLabel($('#labelCanvas'), batch, product, labelPresetSelect.value, sizeText);
+    };
+    labelSizeSelect.addEventListener('change', drawCurrentLabel);
+    labelPresetSelect.addEventListener('change', drawCurrentLabel);
+    $('#downloadLabelBtn').addEventListener('click', function(){ downloadLabel($('#labelCanvas'), batch, labelPresetSelect.value); });
+    drawCurrentLabel();
   }
 
   // ====================================================================
-  // LABEL RENDERING (canvas) — used by both New Batch and Batch Detail
+  // LABEL RENDERING (canvas)
   // ====================================================================
-  async function renderLabel(canvas, batch, product, presetKey){
+  async function renderLabel(canvas, batch, product, presetKey, sizeLabel){
     const preset = LABEL_PRESETS[presetKey] || LABEL_PRESETS['50x30'];
     const w = preset.w * PX_PER_MM;
     const h = preset.h * PX_PER_MM;
@@ -868,14 +1127,14 @@
       try{ await document.fonts.ready; }catch(e){}
     }
 
-    ctx.fillStyle = '#FBFBF4';
+    ctx.fillStyle = '#FBF7ED';
     ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle = '#1F2A1B';
+    ctx.strokeStyle = '#2B2118';
     ctx.lineWidth = Math.max(2, h*0.01);
     ctx.strokeRect(3,3,w-6,h-6);
 
     const pad = Math.round(h*0.08);
-    const qrSize = Math.round(h*0.62); // big enough to scan reliably without eating all the text space
+    const qrSize = Math.round(h*0.62);
     const textMaxWidth = w - qrSize - pad*3;
 
     // ---- bottom block: batch code, then date line(s), stacked upward from the baseline ----
@@ -884,31 +1143,37 @@
     const dateLineH = h*0.10;
     const codeLineH = h*0.15;
 
-    let cursorY = h - pad; // baseline of the lowest line
+    let cursorY = h - pad;
     ctx.font = Math.round(h*0.075) + "px 'IBM Plex Mono', monospace";
-    ctx.fillStyle = '#5B6754';
+    ctx.fillStyle = '#6B5E4F';
     for(let i = dateLines.length - 1; i >= 0; i--){
       ctx.fillText(dateLines[i], pad, cursorY, textMaxWidth);
       cursorY -= dateLineH;
     }
     cursorY -= (codeLineH - dateLineH);
     ctx.font = "600 " + Math.round(h*0.115) + "px 'IBM Plex Mono', monospace";
-    ctx.fillStyle = '#1F2A1B';
+    ctx.fillStyle = '#2B2118';
     ctx.fillText(batch.batch_code, pad, cursorY, textMaxWidth);
 
-    // ---- top block: brand + product name ----
-    ctx.fillStyle = '#5B6754';
-    ctx.font = Math.round(h*0.085) + "px 'IBM Plex Sans', sans-serif";
+    // ---- top block: brand + product name + size ----
+    ctx.fillStyle = '#6B5E4F';
+    ctx.font = Math.round(h*0.08) + "px 'IBM Plex Sans', sans-serif";
     ctx.fillText('EDIBLE ALCHEMY', pad, pad + h*0.06);
 
-    ctx.fillStyle = '#1F2A1B';
-    ctx.font = "650 " + Math.round(h*0.17) + "px 'Fraunces', serif";
-    wrapText(ctx, product.name, pad, pad + h*0.26, textMaxWidth, h*0.18);
+    ctx.fillStyle = '#2B2118';
+    ctx.font = "650 " + Math.round(h*0.16) + "px 'Fraunces', serif";
+    const nameEndY = wrapText(ctx, product.name, pad, pad + h*0.25, textMaxWidth, h*0.17);
+
+    if(sizeLabel){
+      ctx.fillStyle = '#A8763E';
+      ctx.font = "600 " + Math.round(h*0.075) + "px 'IBM Plex Sans', sans-serif";
+      ctx.fillText(sizeLabel, pad, nameEndY + h*0.12, textMaxWidth);
+    }
 
     // ---- QR code, top right ----
     const qrCanvas = document.createElement('canvas');
     const url = location.origin + location.pathname + '#/batch/' + encodeURIComponent(batch.batch_code);
-    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#1F2A1B', light:'#FBFBF4' } });
+    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#2B2118', light:'#FBF7ED' } });
     ctx.drawImage(qrCanvas, w - qrSize - pad, pad, qrSize, qrSize);
   }
 
@@ -927,18 +1192,17 @@
       }
     }
     ctx.fillText(line, x, curY);
+    return curY;
   }
 
-  function downloadLabel(canvas, batch, product, presetKey){
-    renderLabel(canvas, batch, product, presetKey).then(function(){
-      canvas.toBlob(function(blob){
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = batch.batch_code + '_label.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
+  function downloadLabel(canvas, batch, presetKey){
+    canvas.toBlob(function(blob){
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = batch.batch_code + '_label.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
   }
 
