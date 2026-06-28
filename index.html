@@ -191,6 +191,13 @@
   }
   .toast.toast-error{background:var(--danger);}
 
+  .version-tag{
+    position:fixed; bottom:10px; right:12px; z-index:50; pointer-events:none;
+    font-family:'IBM Plex Mono', monospace; font-size:.7rem; color:var(--ink-soft);
+    background:var(--surface); border:1px solid var(--line); border-radius:6px;
+    padding:.2em .55em; opacity:.75;
+  }
+
   @media (max-width:640px){
     .app-header{padding:.8em 1em;}
     .tabs{order:3; width:100%; margin-left:0; justify-content:space-between;}
@@ -201,6 +208,7 @@
 <body>
 
 <div id="toast" class="toast hidden"></div>
+<div id="versionTag" class="version-tag"></div>
 
 <!-- ============== LOGIN ============== -->
 <div id="loginView" class="login-screen">
@@ -408,13 +416,17 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script>
 (function(){
 
   // ====================================================================
   // CONFIG
   // ====================================================================
+  // Bump this by 0.05 with every future change to this app — it's the
+  // only thing that needs updating; the on-screen tag reads from here.
+  const APP_VERSION = "v0.25";
+
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
   const PX_PER_MM = 8;
@@ -1191,62 +1203,101 @@
     const pad = Math.round(h*0.08);
     const qrSize = Math.round(h*0.62);
     const textMaxWidth = w - qrSize - pad*3;
+    const gap = h*0.025;
 
-    // ---- bottom block: batch code, then date line(s), stacked upward from the baseline ----
+    // ---- bottom block: figure out its position FIRST, so the top block
+    // knows exactly how far down it's allowed to grow before it would
+    // start overlapping the batch code / dates ----
     const dateLines = ['Made ' + fmtDate(batch.batch_date)];
     if(batch.best_before_date){ dateLines.push('BB ' + fmtDate(batch.best_before_date)); }
-    const dateLineH = h*0.10;
-    const codeLineH = h*0.15;
+    const dateFont = Math.round(h*0.065);
+    const dateLineH = h*0.09;
+    const codeFont = Math.round(h*0.105);
+    const codeLineH = h*0.13;
 
     let cursorY = h - pad;
-    ctx.font = Math.round(h*0.075) + "px 'IBM Plex Mono', monospace";
+    ctx.font = dateFont + "px 'IBM Plex Mono', monospace";
     ctx.fillStyle = '#6B5E4F';
     for(let i = dateLines.length - 1; i >= 0; i--){
       ctx.fillText(dateLines[i], pad, cursorY, textMaxWidth);
       cursorY -= dateLineH;
     }
     cursorY -= (codeLineH - dateLineH);
-    ctx.font = "600 " + Math.round(h*0.115) + "px 'IBM Plex Mono', monospace";
+    ctx.font = "600 " + codeFont + "px 'IBM Plex Mono', monospace";
     ctx.fillStyle = '#17120D';
     ctx.fillText(batch.batch_code, pad, cursorY, textMaxWidth);
+    const bottomBlockTop = cursorY - codeFont * 0.8; // visual top edge of the bottom block
 
-    // ---- top block: brand + product name + size ----
+    // ---- top block: brand, product name (capped at 2 lines, truncated
+    // with an ellipsis rather than overflowing), then size — laid out
+    // top-down so each piece starts exactly where the last one finished ----
+    let topCursor = pad;
+    const eyebrowFont = Math.round(h*0.07);
     ctx.fillStyle = '#6B5E4F';
-    ctx.font = Math.round(h*0.08) + "px 'IBM Plex Sans', sans-serif";
-    ctx.fillText('EDIBLE ALCHEMY', pad, pad + h*0.06);
+    ctx.font = eyebrowFont + "px 'IBM Plex Sans', sans-serif";
+    topCursor += eyebrowFont;
+    ctx.fillText('EDIBLE ALCHEMY', pad, topCursor, textMaxWidth);
+    topCursor += gap;
 
+    const nameFont = Math.round(h*0.14);
+    const nameLineH = h*0.155;
     ctx.fillStyle = '#17120D';
-    ctx.font = Math.round(h*0.17) + "px 'Bevan', serif";
-    const nameEndY = wrapText(ctx, product.name, pad, pad + h*0.27, textMaxWidth, h*0.18);
+    ctx.font = nameFont + "px 'Bevan', serif";
+    topCursor += nameFont;
+    const nameEndY = wrapTextClamped(ctx, product.name, pad, topCursor, textMaxWidth, nameLineH, 2);
+    topCursor = nameEndY + gap;
 
     if(sizeLabel){
+      const sizeFont = Math.round(h*0.065);
+      ctx.font = "600 " + sizeFont + "px 'IBM Plex Sans', sans-serif";
       ctx.fillStyle = '#8C6B45';
-      ctx.font = "600 " + Math.round(h*0.075) + "px 'IBM Plex Sans', sans-serif";
-      ctx.fillText(sizeLabel, pad, nameEndY + h*0.12, textMaxWidth);
+      topCursor += sizeFont;
+      if(topCursor < bottomBlockTop){ // safety net: never draw into the bottom block
+        ctx.fillText(sizeLabel, pad, topCursor, textMaxWidth);
+      }
     }
 
     // ---- QR code, top right ----
     const qrCanvas = document.createElement('canvas');
     const url = location.origin + location.pathname + '#/batch/' + encodeURIComponent(batch.batch_code);
-    await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#17120D', light:'#FFFFFF' } });
-    ctx.drawImage(qrCanvas, w - qrSize - pad, pad, qrSize, qrSize);
+    try{
+      await QRCode.toCanvas(qrCanvas, url, { width: qrSize, margin: 0, color:{ dark:'#17120D', light:'#FFFFFF' } });
+      ctx.drawImage(qrCanvas, w - qrSize - pad, pad, qrSize, qrSize);
+    }catch(err){
+      showToast('Could not generate the QR code: ' + err.message, true);
+    }
   }
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  function wrapTextClamped(ctx, text, x, y, maxWidth, lineHeight, maxLines){
     const words = String(text||'').split(' ');
+    const lines = [];
     let line = '';
-    let curY = y;
     for(let i=0;i<words.length;i++){
       const test = line + words[i] + ' ';
       if(ctx.measureText(test).width > maxWidth && line){
-        ctx.fillText(line, x, curY);
+        lines.push(line.trim());
         line = words[i] + ' ';
-        curY += lineHeight;
       } else {
         line = test;
       }
     }
-    ctx.fillText(line, x, curY);
+    if(line) lines.push(line.trim());
+
+    let shown = lines;
+    if(lines.length > maxLines){
+      shown = lines.slice(0, maxLines);
+      let last = shown[maxLines-1];
+      while(ctx.measureText(last + '…').width > maxWidth && last.length > 0){
+        last = last.slice(0, -1).trim();
+      }
+      shown[maxLines-1] = last + '…';
+    }
+
+    let curY = y;
+    shown.forEach(function(ln, idx){
+      ctx.fillText(ln, x, curY);
+      if(idx < shown.length-1) curY += lineHeight;
+    });
     return curY;
   }
 
@@ -1264,6 +1315,7 @@
   // ====================================================================
   // GO
   // ====================================================================
+  $('#versionTag').textContent = APP_VERSION;
   renderPSizeEditor();
   initAuth();
 
