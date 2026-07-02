@@ -410,7 +410,7 @@
   // ====================================================================
   // CONFIG — bump APP_VERSION by 0.05 with every future change session
   // ====================================================================
-  const APP_VERSION = "v0.50";
+  const APP_VERSION = "v0.55";
   const SUPABASE_URL = "https://wnphrixojqypdbvnaazd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InducGhyaXhvanF5cGRidm5hYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MTYxODEsImV4cCI6MjA5ODE5MjE4MX0.hsi295Q2jQNTHLiuAiBsMvf0QZV_dljKsVlWUc1haGc";
   const PX_PER_MM = 8;
@@ -438,7 +438,7 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // state.batches now holds ALL batches (archived + active); render functions filter as needed
-  const state = { categories:[], products:[], archivedProducts:[], productSizes:[], batches:[], sizeQuantities:[], sales:[], losses:[] };
+  const state = { categories:[], products:[], archivedProducts:[], productSizes:[], batches:[], sizeQuantities:[], sales:[], losses:[], repacks:[] };
   let nbSizeRowState = [];
   let pSizeRowState = [];
   let editSizeRowState = []; // {id|null, label, markedForRemoval}
@@ -515,7 +515,7 @@
   // ====================================================================
   async function loadAll(){
     try{
-      const [cRes, pRes, apRes, psRes, bRes, sqRes, sRes, lRes] = await Promise.all([
+      const [cRes, pRes, apRes, psRes, bRes, sqRes, sRes, lRes, rRes] = await Promise.all([
         sb.from('categories').select('*').order('sort_order'),
         sb.from('products').select('*').eq('active', true).order('name'),
         sb.from('products').select('*').eq('active', false).order('name'),
@@ -523,9 +523,10 @@
         sb.from('batches').select('*').order('batch_date', { ascending:false }), // ALL batches
         sb.from('batch_size_quantities').select('*'),
         sb.from('batch_sales').select('*'),
-        sb.from('batch_losses').select('*')
+        sb.from('batch_losses').select('*'),
+        sb.from('batch_repacks').select('*')
       ]);
-      [cRes,pRes,apRes,psRes,bRes,sqRes,sRes,lRes].forEach(function(r){ if(r.error) throw r.error; });
+      [cRes,pRes,apRes,psRes,bRes,sqRes,sRes,lRes,rRes].forEach(function(r){ if(r.error) throw r.error; });
       state.categories = cRes.data || [];
       state.products = pRes.data || [];
       state.archivedProducts = apRes.data || [];
@@ -534,6 +535,7 @@
       state.sizeQuantities = sqRes.data || [];
       state.sales = sRes.data || [];
       state.losses = lRes.data || [];
+      state.repacks = rRes.data || [];
       populateProductSelects();
       renderDashboard();
       renderCategoryChips();
@@ -557,14 +559,42 @@
   function lostForBatchSize(bid, sid){
     return state.losses.filter(function(l){ return l.batch_id===bid && l.product_size_id===sid; }).reduce(function(sum,l){ return sum+Number(l.quantity); }, 0);
   }
-  function remainingForBatchSize(bid, sid){ return producedForBatchSize(bid,sid) - soldForBatchSize(bid,sid) - lostForBatchSize(bid,sid); }
+  function repackedOutForBatchSize(bid, sid){
+    // how many of this size were consumed to produce another size
+    return state.repacks.filter(function(r){ return r.batch_id===bid && r.from_size_id===sid; }).reduce(function(sum,r){ return sum+Number(r.from_quantity); }, 0);
+  }
+  function repackedInForBatchSize(bid, sid){
+    // how many of this size were produced from repacking another size
+    return state.repacks.filter(function(r){ return r.batch_id===bid && r.to_size_id===sid; }).reduce(function(sum,r){ return sum+Number(r.to_quantity); }, 0);
+  }
+  function remainingForBatchSize(bid, sid){
+    return producedForBatchSize(bid,sid)
+      - soldForBatchSize(bid,sid)
+      - lostForBatchSize(bid,sid)
+      - repackedOutForBatchSize(bid,sid)
+      + repackedInForBatchSize(bid,sid);
+  }
   function batchSizeBreakdown(bid){
-    return state.sizeQuantities.filter(function(q){ return q.batch_id===bid; }).map(function(q){
-      const size = state.productSizes.find(function(s){ return s.id===q.product_size_id; });
-      const sold = soldForBatchSize(bid, q.product_size_id);
-      const lost = lostForBatchSize(bid, q.product_size_id);
-      return { sizeId:q.product_size_id, label:size?size.label:'Unknown', sortOrder:size?size.sort_order:0, produced:Number(q.quantity_produced), sold, lost, remaining:Number(q.quantity_produced)-sold-lost };
-    }).sort(function(a,b){ return a.sortOrder-b.sortOrder; });
+    // Collect all sizes that have any activity (produced, repacked-in)
+    const sizeIds = new Set();
+    state.sizeQuantities.filter(function(q){ return q.batch_id===bid; }).forEach(function(q){ sizeIds.add(q.product_size_id); });
+    state.repacks.filter(function(r){ return r.batch_id===bid; }).forEach(function(r){ sizeIds.add(r.to_size_id); });
+
+    return Array.from(sizeIds).map(function(sid){
+      const size = state.productSizes.find(function(s){ return s.id===sid; });
+      const produced = producedForBatchSize(bid, sid);
+      const sold = soldForBatchSize(bid, sid);
+      const lost = lostForBatchSize(bid, sid);
+      const repackOut = repackedOutForBatchSize(bid, sid);
+      const repackIn = repackedInForBatchSize(bid, sid);
+      return {
+        sizeId: sid,
+        label: size ? size.label : 'Unknown size',
+        sortOrder: size ? size.sort_order : 999,
+        produced, sold, lost, repackOut, repackIn,
+        remaining: produced - sold - lost - repackOut + repackIn
+      };
+    }).sort(function(a,b){ return a.sortOrder - b.sortOrder; });
   }
   function remainingForProductSize(pid, sid){
     // only count non-archived batches for live stock display
@@ -813,6 +843,9 @@
     '</div>';
 
     renderEditSizeRows();
+
+    // Scroll the panel into view — without this it renders below the fold and looks like nothing happened
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     $('#closeEditPanelBtn').addEventListener('click', function(){ $('#productEditPanel').innerHTML = ''; editProductId = null; });
     $('#editAddSizeBtn').addEventListener('click', function(){ editSizeRowState.push({id:null, label:'', markedForRemoval:false}); renderEditSizeRows(); });
@@ -1129,6 +1162,8 @@
     const archivedBanner = batch.archived ?
       '<div style="background:#F5E7CB;border:1px solid #D6B46A;border-radius:8px;padding:.8em 1em;margin-bottom:1em;font-size:.92rem;display:flex;align-items:center;gap:.8em;"><span>⚠️ This batch is <strong>archived</strong>.</span><button id="unarchiveBatchBtn" class="btn btn-secondary btn-small">Restore batch</button></div>' : '';
 
+    const repacksForBatch = state.repacks.filter(function(r){ return r.batch_id===batch.id; }).sort(function(a,b){ return b.repack_date.localeCompare(a.repack_date); });
+
     content.innerHTML =
       archivedBanner +
       '<div class="detail-head">' +
@@ -1143,15 +1178,36 @@
       '<div id="editBatchPanel" class="hidden"></div>' +
 
       '<h3>Stock by size</h3>' +
-      '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Sold</th><th>Lost</th><th>Remaining</th></tr></thead><tbody>' +
+      '<table class="data-table"><thead><tr><th>Size</th><th>Produced</th><th>Repacked</th><th>Sold</th><th>Lost</th><th>Remaining</th></tr></thead><tbody>' +
         breakdown.map(function(row){
-          return '<tr><td>'+escapeHtml(row.label)+'</td><td>'+row.produced+'</td><td>'+row.sold+'</td><td>'+(row.lost>0?'<span class="text-out">'+row.lost+'</span>':'0')+'</td><td class="'+(row.remaining<=0?'text-out':'')+'">'+row.remaining+'</td></tr>';
+          const repackCell = (row.repackIn > 0 || row.repackOut > 0)
+            ? '<span style="font-size:.8rem;color:var(--ink-soft)">'+( row.repackIn > 0 ? '+'+row.repackIn+' in' : '' )+(row.repackIn>0 && row.repackOut>0 ? ' / ' : '')+(row.repackOut > 0 ? '−'+row.repackOut+' out' : '')+'</span>'
+            : '—';
+          return '<tr><td>'+escapeHtml(row.label)+'</td><td>'+row.produced+'</td><td>'+repackCell+'</td><td>'+row.sold+'</td><td>'+(row.lost>0?'<span class="text-out">'+row.lost+'</span>':'0')+'</td><td class="'+(row.remaining<=0?'text-out':'')+'">'+row.remaining+'</td></tr>';
         }).join('') +
       '</tbody></table>' +
 
       (batch.recipe_notes ? '<div class="detail-notes"><span class="label">Recipe notes</span><p>'+escapeHtml(batch.recipe_notes)+'</p></div>' : '') +
       (batch.process_notes ? '<div class="detail-notes"><span class="label">Process notes</span><p>'+escapeHtml(batch.process_notes)+'</p></div>' : '') +
       recipeFileHtml +
+
+      '<h3>Repacks</h3>' +
+      '<p class="help-text">Converting one size into another within this batch — e.g. breaking a 750ml jar into 100ml bottles. Stock adjusts automatically on both sizes.</p>' +
+      '<table class="data-table"><thead><tr><th>Date</th><th>From</th><th>→</th><th>To</th><th>Notes</th></tr></thead><tbody>' +
+        (repacksForBatch.map(function(r){
+          return '<tr><td>'+fmtDate(r.repack_date)+'</td><td>'+r.from_quantity+'× '+escapeHtml(sizeLookup[r.from_size_id]||'—')+'</td><td>→</td><td>'+r.to_quantity+'× '+escapeHtml(sizeLookup[r.to_size_id]||'—')+'</td><td>'+escapeHtml(r.notes||'—')+'</td></tr>';
+        }).join('') || '<tr><td colspan="5" class="empty-note">No repacks for this batch.</td></tr>') +
+      '</tbody></table>' +
+      '<h3>Log a repack</h3>' +
+      '<form id="repackForm" class="inline-form">' +
+        '<label>From size<select id="rpFromSize">'+breakdown.filter(function(r){ return r.remaining>0; }).map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+' ('+r.remaining+' left)</option>'; }).join('')+'</select></label>' +
+        '<label>Qty consumed<input type="number" id="rpFromQty" min="0.01" step="0.01" required placeholder="e.g. 1"></label>' +
+        '<label>Into size<select id="rpToSize">'+breakdown.map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('')+'</select></label>' +
+        '<label>Qty produced<input type="number" id="rpToQty" min="0.01" step="0.01" required placeholder="e.g. 7"></label>' +
+        '<label>Date<input type="date" id="rpDate" value="'+todayISO()+'"></label>' +
+        '<label>Notes<input type="text" id="rpNotes" placeholder="optional"></label>' +
+        '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){ return r.remaining<=0; })?'disabled':'')+'>Log repack</button>' +
+      '</form>' +
 
       '<h3>Sales &amp; allocations</h3>' +
       '<table class="data-table"><thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Sold to</th><th>Channel</th><th>Reference</th></tr></thead><tbody>' +
@@ -1211,6 +1267,37 @@
       '<button id="deleteBatchBtn" class="btn btn-secondary" style="border-color:var(--danger);color:var(--danger);">Delete this batch</button>';
 
     // ---- EDIT BATCH ----
+    // ---- REPACK ----
+    if($('#repackForm')){
+      $('#repackForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const fromSizeId = $('#rpFromSize').value;
+        const toSizeId = $('#rpToSize').value;
+        if(fromSizeId === toSizeId){ showToast('From and to sizes must be different', true); return; }
+        const fromQty = Number($('#rpFromQty').value);
+        const rem = remainingForBatchSize(batch.id, fromSizeId);
+        if(fromQty <= 0 || fromQty > rem){ showToast('From quantity must be between 0 and '+rem, true); return; }
+        const toQty = Number($('#rpToQty').value);
+        if(toQty <= 0){ showToast('To quantity must be greater than 0', true); return; }
+        try{
+          const { error } = await sb.from('batch_repacks').insert({
+            batch_id: batch.id,
+            from_size_id: fromSizeId,
+            from_quantity: fromQty,
+            to_size_id: toSizeId,
+            to_quantity: toQty,
+            repack_date: $('#rpDate').value || todayISO(),
+            notes: $('#rpNotes').value.trim() || null,
+            created_by: currentUserEmail
+          });
+          if(error) throw error;
+          showToast('Repack logged — '+fromQty+'× '+($('#rpFromSize').options[$('#rpFromSize').selectedIndex].text.split(' (')[0])+' → '+toQty+'× '+$('#rpToSize').options[$('#rpToSize').selectedIndex].text);
+          await loadAll();
+          openBatchDetail(code);
+        }catch(err){ showToast('Could not log repack: '+err.message, true); }
+      });
+    }
+
     $('#toggleEditBatchBtn').addEventListener('click', function(){
       const panel = $('#editBatchPanel');
       if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); this.textContent = '✏️ Edit batch details'; return; }
@@ -1513,7 +1600,7 @@
     const btn = $('#downloadBackupBtn');
     btn.disabled = true; btn.textContent = 'Downloading…';
     try{
-      const tableNames = ['categories','products','product_sizes','batches','batch_size_quantities','batch_sales','batch_losses'];
+      const tableNames = ['categories','products','product_sizes','batches','batch_size_quantities','batch_sales','batch_losses','batch_repacks'];
       const results = await Promise.all(tableNames.map(function(t){ return sb.from(t).select('*'); }));
       const backup = { exported_at: new Date().toISOString(), app_version: APP_VERSION };
       for(let i=0;i<tableNames.length;i++){
