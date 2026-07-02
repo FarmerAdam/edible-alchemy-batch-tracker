@@ -1192,22 +1192,11 @@
       recipeFileHtml +
 
       '<h3>Repacks</h3>' +
-      '<p class="help-text">Converting one size into another within this batch — e.g. breaking a 750ml jar into 100ml bottles. Stock adjusts automatically on both sizes.</p>' +
       '<table class="data-table"><thead><tr><th>Date</th><th>From</th><th>→</th><th>To</th><th>Notes</th></tr></thead><tbody>' +
         (repacksForBatch.map(function(r){
           return '<tr><td>'+fmtDate(r.repack_date)+'</td><td>'+r.from_quantity+'× '+escapeHtml(sizeLookup[r.from_size_id]||'—')+'</td><td>→</td><td>'+r.to_quantity+'× '+escapeHtml(sizeLookup[r.to_size_id]||'—')+'</td><td>'+escapeHtml(r.notes||'—')+'</td></tr>';
         }).join('') || '<tr><td colspan="5" class="empty-note">No repacks for this batch.</td></tr>') +
       '</tbody></table>' +
-      '<h3>Log a repack</h3>' +
-      '<form id="repackForm" class="inline-form">' +
-        '<label>From size<select id="rpFromSize">'+breakdown.filter(function(r){ return r.remaining>0; }).map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+' ('+r.remaining+' left)</option>'; }).join('')+'</select></label>' +
-        '<label>Qty consumed<input type="number" id="rpFromQty" min="0.01" step="0.01" required placeholder="e.g. 1"></label>' +
-        '<label>Into size<select id="rpToSize">'+breakdown.map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('')+'</select></label>' +
-        '<label>Qty produced<input type="number" id="rpToQty" min="0.01" step="0.01" required placeholder="e.g. 7"></label>' +
-        '<label>Date<input type="date" id="rpDate" value="'+todayISO()+'"></label>' +
-        '<label>Notes<input type="text" id="rpNotes" placeholder="optional"></label>' +
-        '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){ return r.remaining<=0; })?'disabled':'')+'>Log repack</button>' +
-      '</form>' +
 
       '<h3>Sales &amp; allocations</h3>' +
       '<table class="data-table"><thead><tr><th>Date</th><th>Size</th><th>Qty</th><th>Sold to</th><th>Channel</th><th>Reference</th></tr></thead><tbody>' +
@@ -1222,6 +1211,20 @@
           return '<tr><td>'+fmtDate(l.loss_date)+'</td><td>'+escapeHtml(sizeLookup[l.product_size_id]||'—')+'</td><td>'+l.quantity+'</td><td>'+escapeHtml(l.reason||'—')+'</td><td>'+escapeHtml(l.notes||'—')+'</td></tr>';
         }).join('') || '<tr><td colspan="5" class="empty-note">Nothing discarded from this batch.</td></tr>') +
       '</tbody></table>' +
+
+      '<hr style="border:none;border-top:2px solid var(--line);margin:2em 0 1em;">' +
+
+      '<h3>Log a repack</h3>' +
+      '<p class="help-text">Converting one size into another within this batch — e.g. breaking a 750ml jar into 100ml bottles.</p>' +
+      '<form id="repackForm" class="inline-form">' +
+        '<label>From size<select id="rpFromSize">'+breakdown.filter(function(r){ return r.remaining>0; }).map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+' ('+r.remaining+' left)</option>'; }).join('')+'</select></label>' +
+        '<label>Qty consumed<input type="number" id="rpFromQty" min="0.01" step="0.01" required placeholder="e.g. 1"></label>' +
+        '<label>Into size<select id="rpToSize">'+breakdown.map(function(r){ return '<option value="'+r.sizeId+'">'+escapeHtml(r.label)+'</option>'; }).join('')+'</select></label>' +
+        '<label>Qty produced<input type="number" id="rpToQty" min="0.01" step="0.01" required placeholder="e.g. 7"></label>' +
+        '<label>Date<input type="date" id="rpDate" value="'+todayISO()+'"></label>' +
+        '<label>Notes<input type="text" id="rpNotes" placeholder="optional"></label>' +
+        '<button type="submit" class="btn btn-primary" '+(breakdown.every(function(r){ return r.remaining<=0; })?'disabled':'')+'>Log repack</button>' +
+      '</form>' +
 
       (breakdown.some(function(r){ return r.remaining>0; }) ? (
         '<h3>Log a quick sale from this batch</h3>' +
@@ -1244,7 +1247,7 @@
           '<label>Date<input type="date" id="qlDate" value="'+todayISO()+'"></label>' +
           '<button type="submit" class="btn btn-primary">Log loss</button>' +
         '</form>'
-      ) : '<p class="help-text" style="margin-top:1.4em">No remaining stock — nothing to sell or discard from this batch.</p>') +
+      ) : '<p class="help-text" style="margin-top:.8em">No remaining stock — nothing to sell, discard, or repack from this batch.</p>') +
 
       '<h3>Label</h3>' +
       '<div class="label-section"><div class="form-row">' +
